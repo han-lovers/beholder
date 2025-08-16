@@ -245,9 +245,9 @@ class SmartChatKeylogger:
         lines = self.captured_text.split('\n')
         for line in lines:
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash", contents=f"In the following message: '{line}', I need you to identify any form of grooming, this message was written by a 12 year old and so have that into consideration to choose the reason of grooming and the severity, write the response in the form '[cause],[severity]', where severity can be low, mid or high, if there is no grooming respond with 'NA/NA'"
+                model="gemini-2.5-flash", contents=f"In the following message, written in spansih: '{line}', I need you to identify any form of grooming, this message was written by a 12 year old and so have that into consideration to choose the reason of grooming and the severity. Here are a couple examples: Text 1: 'Claro, si quieres te puedo mandar una foto mia, pero tu me tienes que mandar otra' Response: 'Solicitud de fotos/mid' Explanation: 'By asking a 12 year old for a photo, it implies that the other person might want to groom them because it is wrong to solicit photos from minors'. Text 2: 'Si quieres nos podemos ver, tu por donde vives? yo vivo en la Magdalena Contreras'. Response: 'Solicitud de reunion/high'. Explanation: 'Soliciting to meet with a minor is a very grave offense, also, the minor is giving away information about where he lives, which is also very dangerous' write the response in the form '[cause]/[severity]', where severity can be low, mid or high, if there is no grooming respond with 'NA/NA'"
             )
-            workedResponse = str(response.text).split(",")
+            workedResponse = response.text.split("/")
             cause = workedResponse[0]
             severity = workedResponse[1]
 
