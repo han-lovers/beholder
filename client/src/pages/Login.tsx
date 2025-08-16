@@ -25,7 +25,7 @@ export default function Login() {
         </div>
 
         <h2 className="text-2xl font-bold mb-6 text-center text-azulInstitucional dark:text-verdeInstitucional">
-          Beaholder
+          Beholder
         </h2>
 
         <div className="mb-4">

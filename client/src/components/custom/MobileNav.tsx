@@ -36,7 +36,7 @@ export default function MobileNav() {
       {/* Logo temporal */}
       <Link to="/" className="flex items-center gap-2">
         <div className="bg-gray-300 w-8 h-8 rounded" /> {/* Logo placeholder */}
-        <span className="text-lg font-bold">MyApp</span>
+        <span className="text-lg font-bold">Beholder</span>
       </Link>
 
       {/* Menú hamburguesa */}
