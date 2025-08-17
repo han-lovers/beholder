@@ -8,8 +8,10 @@ import json
 from models.user import RegisterUser, User
 from models.key_logger import Connector
 from models.denuncia import Denuncia
+from models.alerts import Alert, UserId
 from db.users import *
 from db.blacklist import *
+from db.logs import *
 from utils.passwords import *
 
 
@@ -112,33 +114,14 @@ async def alerts_websocket(websocket: WebSocket, key: str):
     except WebSocketDisconnect:
         channels[key].remove(websocket)
 
-@app.websocket("/v1/ws/{key}")
-async def alerts_websocket(websocket: WebSocket, key: str):
-    await websocket.accept()
-    if key not in channels:
-        channels[key] = []
-    channels[key].append(websocket)
+@app.post("/v1/key_logger/warning")
+def post_alerts(alert: Alert):
+    add_logs(alert)
 
-    try:
-        while True:
-            # Receive JSON string from Client A
-            message_text = await websocket.receive_text()
-            try:
-                message = json.loads(message_text)
-            except json.JSONDecodeError:
-                await websocket.send_text("Invalid JSON")
-                continue
+    return alert
 
-            # Optional: validate expected keys
-            expected_keys = {"type", "importance", "img", "description"}
-            if not expected_keys.issubset(message.keys()):
-                await websocket.send_text("Missing keys in JSON")
-                continue
+@app.get("/v1/key_logger/warning/{id}")
+def get_alert_logs(id: str):
+    alerts = get_alerts(id)
 
-            # Broadcast JSON to all other clients (e.g., Client B)
-            for conn in channels[key]:
-                if conn != websocket:
-                    await conn.send_text(json.dumps(message))
-
-    except WebSocketDisconnect:
-        channels[key].remove(websocket)
+    return {"warnings": alerts}
