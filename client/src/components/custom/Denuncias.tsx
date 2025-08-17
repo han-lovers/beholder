@@ -1,60 +1,65 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
 interface Denuncia {
-  name_tag: string;
-  app: string;
-  descripcion: string;
+  name_tag: string
+  app: string
+  descripcion: string
+  imagen_base64?: string
 }
 
 export default function Denuncias() {
-  const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [denuncias, setDenuncias] = useState<Denuncia[]>([])
+  const [showForm, setShowForm] = useState(false)
+  const [formData, setFormData] = useState<Denuncia>({
     name_tag: '',
     app: '',
     descripcion: '',
-    imagen: null as File | null,
-  });
+    imagen_base64: '',
+  })
 
   useEffect(() => {
     const getDenuncias = async () => {
       try {
-        const response = await fetch(`/v1/web/blacklist/get/${id}`);
-        const data = await response.json();
-        setDenuncias(data);
+        const response = await fetch(`/v1/web/blacklist/get/`)
+        const data = await response.json()
+        setDenuncias(data)
       } catch (err) {
-        console.error(err);
+        console.error(err)
       }
-    };
+    }
 
-    getDenuncias();
-  }, []);
+    getDenuncias()
+  }, [])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setFormData({ ...formData, imagen_base64: reader.result as string })
+    }
+    reader.readAsDataURL(file) // convierte en base64
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload = new FormData();
-    payload.append('name_tag', formData.name_tag);
-    payload.append('app', formData.app);
-    payload.append('descripcion', formData.descripcion);
-    if (formData.imagen) {
-      payload.append('imagen', formData.imagen);
-    }
+    e.preventDefault()
 
     try {
       const response = await fetch('/v1/web/blacklist/add', {
         method: 'POST',
-        body: payload,
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
-      const result = await response.json();
-      alert('Se ha mandado la denuncia');
-      setShowForm(false);
+      const result = await response.json()
+      alert('Se ha mandado la denuncia')
+      setShowForm(false)
     } catch (err) {
-      console.error(err);
-      alert('Error al enviar denuncia');
+      console.error(err)
+      alert('Error al enviar denuncia')
     }
-  };
+  }
 
   return (
     <div className="w-full flex flex-col items-center p-10">
@@ -111,12 +116,7 @@ export default function Denuncias() {
               id="file-upload"
               type="file"
               accept="image/*"
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  imagen: e.target.files?.[0] || null,
-                })
-              }
+              onChange={handleFileChange}
               className="hidden"
             />
 

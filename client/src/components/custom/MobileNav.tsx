@@ -20,8 +20,12 @@ const navItems = [
     href: '/bitacora',
     icon: <HomeIcon className="h-4 w-4 text-gray-500" />,
   },
+  {
+    name: 'Sign Out',
+    href: '/home',
+    icon: <LogIn className="h-4 w-4 text-gray-500" />,
+  },
 ]
-
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
