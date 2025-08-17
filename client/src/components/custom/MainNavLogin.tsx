@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { LogIn, Info, Home as HomeIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModeToggle } from '@/components/mode-toggle'
+import Logo from '../assets/logo.png'
 
 const navItems = [
   {
@@ -21,7 +22,7 @@ export default function MainNav() {
   return (
     <div className="hidden md:flex items-center gap-4 w-full justify-between">
       <Link to="/home" className="flex items-center gap-2">
-        <div className="bg-gray-300 w-8 h-8 rounded" />
+        <img src={Logo} alt="Beholder" className="w-8 h-8 rounded" />
         <span className="text-lg font-bold">Beholder</span>
       </Link>
 

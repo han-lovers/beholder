@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Logo from '../components/assets/logo.png'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -74,9 +75,7 @@ export default function Login() {
       <div className="p-8 rounded-lg shadow-lg w-full max-w-sm bg-card">
         <div className="flex justify-center mb-4">
           <img
-            src={
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvwEWnX6R0e4Y_0z7z9W8dgocqvdGQ7lrwfg&s'
-            }
+            src={Logo}
             alt="Logo"
             className="w-24 h-24"
           />
