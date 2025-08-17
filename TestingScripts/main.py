@@ -168,13 +168,13 @@ class SmartChatKeylogger:
         self.captured_text += chat_entry
         print(f"Chat detected: {cleaned_message[:50]}...")  # Preview
 
+        self.evaluate_chats(cleaned_message)
+
         # Take screenshot of entire screen
         screenshot = pyautogui.screenshot()
-
         # Save it
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         screenshot.save(f"C:/Users/josem/Documents/Watchdog/Executables/testing/screenshot_{timestamp}.png")
-
 
     
     def start_monitoring(self):
@@ -199,7 +199,7 @@ class SmartChatKeylogger:
             self.stop_capture()
     
     def stop_capture(self):
-        self.evaluate_chats()
+    
         """Stop capturing and display results"""
         print("\nStopping chat monitoring...")
         self.running = False
@@ -241,17 +241,123 @@ class SmartChatKeylogger:
                     
         return '\n'.join(recent_chats)
     
-    def evaluate_chats(self):
-        lines = self.captured_text.split('\n')
-        for line in lines:
+    def evaluate_chats(self, msg):
+        """Evaluate chat message using Gemini AI"""
+        try:
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash", contents=f"In the following message, written in spansih: '{line}', I need you to identify any form of grooming, this message was written by a 12 year old and so have that into consideration to choose the reason of grooming and the severity. Here are a couple examples: Text 1: 'Claro, si quieres te puedo mandar una foto mia, pero tu me tienes que mandar otra' Response: 'Solicitud de fotos/mid' Explanation: 'By asking a 12 year old for a photo, it implies that the other person might want to groom them because it is wrong to solicit photos from minors'. Text 2: 'Si quieres nos podemos ver, tu por donde vives? yo vivo en la Magdalena Contreras'. Response: 'Solicitud de reunion/high'. Explanation: 'Soliciting to meet with a minor is a very grave offense, also, the minor is giving away information about where he lives, which is also very dangerous' write the response in the form '[cause]/[severity]', where severity can be low, mid or high, if there is no grooming respond with 'NA/NA'"
-            )
-            workedResponse = response.text.split("/")
-            cause = workedResponse[0]
-            severity = workedResponse[1]
+                model="gemini-1.5-flash", 
+                contents=f"""
+                You are a text pattern analyzer. Analyze the following message for potentially concerning communication patterns.
 
-            print(f"for {line}, the response cause of the model is {cause} and the severity is {severity}")
+                Text to analyze: "{msg}"
+
+                Classification categories:
+                1. image_request - Requests for photos or images
+                2. meeting_request - Requests to meet in person
+                3. location_request - Asking for address, location, or personal details
+                4. secrecy_request - Asking to keep conversations private or secret
+                5. manipulation - Excessive compliments, "special" language, emotional pressure
+                6. gift_offer - Offering money, gifts, or rewards
+                7. boundary_test - Testing limits or pushing boundaries
+
+                Risk levels: low, medium, high
+
+                Respond ONLY in this format: [category]/[level] or normal/none
+
+                Examples:
+                Input: "can you send me a picture"
+                Output: image_request/medium
+
+                Input: "we should meet up sometime"
+                Output: meeting_request/medium
+
+                Input: "what's your address"
+                Output: location_request/high
+
+                Input: "don't tell your parents we talk"
+                Output: secrecy_request/high
+
+                Input: "hello how are you today"
+                Output: normal/none
+
+                Input: "you're so mature for your age"
+                Output: manipulation/medium
+
+                Analyze the message and respond with the format above.
+                """
+            )
+            
+            if response and hasattr(response, 'text') and response.text:
+                response_text = response.text.strip().lower()
+                if "/" in response_text:
+                    parts = response_text.split("/")
+                    if len(parts) >= 2:
+                        category = parts[0].strip()
+                        severity = parts[1].strip()
+                        print(f"For {msg}: {category}/{severity}")
+                        return f"{category}/{severity}"
+                        
+        except Exception as e:
+            print(f"AI Error: {e}")
+            
+        # Fallback to rule-based if AI fails
+        result = self.rule_based_analysis(msg)
+        if result != "NA/NA":
+            print(f"For {msg}: {result}")
+        return result
+
+    def rule_based_analysis(self, msg):
+        """Rule-based analysis for concerning patterns"""
+        msg_lower = msg.lower().strip()
+        
+        # Define concerning patterns and keywords
+        photo_keywords = ['foto', 'photo', 'pic', 'picture', 'imagen', 'selfie', 'manda', 'send', 'envia']
+        meeting_keywords = ['vemos', 'meet', 'encuentro', 'reunion', 'conocer', 'verse', 'quedar', 'salir']
+        location_keywords = ['donde vives', 'direccion', 'casa', 'escuela', 'where do you live', 'address', 'location']
+        secrecy_keywords = ['secreto', 'no digas', 'entre nosotros', 'secret', 'dont tell', 'between us', 'privado']
+        manipulation_keywords = ['especial', 'madura', 'diferente', 'special', 'mature', 'unique', 'regalo', 'gift']
+        inappropriate_keywords = ['sexy', 'linda', 'hermosa', 'cuerpo', 'body', 'intimate', 'beautiful', 'attractive']
+        
+        # Check for photo requests
+        photo_score = sum(1 for keyword in photo_keywords if keyword in msg_lower)
+        if photo_score >= 1 and any(word in msg_lower for word in ['tu', 'tuya', 'your', 'you']):
+            return "photo_request/high"
+        elif photo_score >= 1:
+            return "photo_request/medium"
+        
+        # Check for meeting requests
+        meeting_score = sum(1 for keyword in meeting_keywords if keyword in msg_lower)
+        location_score = sum(1 for keyword in location_keywords if keyword in msg_lower)
+        
+        if meeting_score >= 1 and location_score >= 1:
+            return "meeting_request/high"
+        elif meeting_score >= 1:
+            return "meeting_request/medium"
+        elif location_score >= 1:
+            return "personal_info/high"
+        
+        # Check for secrecy requests
+        secrecy_score = sum(1 for keyword in secrecy_keywords if keyword in msg_lower)
+        if secrecy_score >= 1:
+            return "secrecy_request/high"
+        
+        # Check for manipulation
+        manipulation_score = sum(1 for keyword in manipulation_keywords if keyword in msg_lower)
+        if manipulation_score >= 2:
+            return "manipulation/medium"
+        elif manipulation_score >= 1 and len(msg) > 20:  # Longer manipulative messages
+            return "manipulation/low"
+        
+        # Check for inappropriate content
+        inappropriate_score = sum(1 for keyword in inappropriate_keywords if keyword in msg_lower)
+        if inappropriate_score >= 1:
+            return "inappropriate_content/medium"
+        
+        # Check for gift/incentive offers
+        if any(word in msg_lower for word in ['regalo', 'dinero', 'money', 'gift', 'buy', 'comprar']):
+            return "incentive_offer/medium"
+        
+        return "NA/NA"
 
 # Usage
 if __name__ == "__main__":
