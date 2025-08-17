@@ -655,12 +655,11 @@ class SmartChatKeylogger:
             }
 
             # Enviar la alerta de grooming
-            url = "http://127.0.0.1:8000/api/grooming_alerts/"
+            url = "https://api-257470668223.us-central1.run.app/v1/key_logger/warning/"
             response = requests.post(url, json=grooming_payload)
             print(f"Alerta de grooming enviada: {response.status_code}")
 
             if response.status_code == 200:
-                print(f"✅ Alerta de grooming enviada exitosamente")
                 print(f"   Tipo: {alert_type}")
                 print(f"   Importancia: {importance}")
                 print(f"   Descripción: {self.get_alert_description(alert_type)}")
