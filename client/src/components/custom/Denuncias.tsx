@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 interface Denuncia {
   name_tag: string
   app: string
-  description: string
+  descripcion: string
   image_base64?: string
 }
 
@@ -13,7 +13,7 @@ export default function Denuncias() {
   const [formData, setFormData] = useState<Denuncia>({
     name_tag: '',
     app: '',
-    description: '',
+    descripcion: '',
     image_base64: '',
   })
 
@@ -48,14 +48,11 @@ export default function Denuncias() {
 
     try {
       console.log(formData)
-      const response = await fetch(
-        'https://api-257470668223.us-central1.run.app/v1/web/blacklist/add',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        }
-      )
+      const response = await fetch('https://api-257470668223.us-central1.run.app/v1/web/blacklist/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
       const result = await response.json()
       //console.log(result);
@@ -85,7 +82,7 @@ export default function Denuncias() {
               onChange={(e) =>
                 setFormData({ ...formData, name_tag: e.target.value })
               }
-              className="w-full border px-4 py-2 rounded text-black bg-gray-300"
+              className="w-full border text-black px-4 py-2 rounded bg-gray-300"
               required
             />
 
@@ -97,18 +94,18 @@ export default function Denuncias() {
               onChange={(e) =>
                 setFormData({ ...formData, app: e.target.value })
               }
-              className="w-full border px-4 py-2 rounded text-black bg-gray-300"
+              className="w-full border text-black px-4 py-2 rounded bg-gray-300"
               required
             />
 
             <h3>Descripción</h3>
             <textarea
               placeholder="Complete con una descripción"
-              value={formData.description}
+              value={formData.descripcion}
               onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+                setFormData({ ...formData, descripcion: e.target.value })
               }
-              className="w-full border px-4 py-2 rounded text-black bg-gray-300"
+              className="w-full border text-black px-4 py-2 rounded bg-gray-300"
               required
             />
 
@@ -145,44 +142,24 @@ export default function Denuncias() {
         </div>
       ) : (
         <>
-          <div className="w-full overflow-x-auto">
-            <div className="max-h-[400px] overflow-y-auto rounded-xl shadow-lg">
-              <table className="w-full mx-auto bg-card text-center" style={{ tableLayout: 'fixed' }}>
-                <colgroup>
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '50%' }} />
-                </colgroup>
-                <thead className="bg-muted sticky top-0 z-10">
-                  <tr>
-                    <th className="py-3 px-4">Name Tag</th>
-                    <th className="py-3 px-4">App</th>
-                    <th className="py-3 px-4">Descripción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {denuncias.length > 0 ? (
-                    denuncias.map((d, i) => (
-                      <tr
-                        key={i}
-                        className="border-b last:border-b-0 bg-background"
-                      >
-                        <td className="py-3 px-4">{d.name_tag}</td>
-                        <td className="py-3 px-4">{d.app}</td>
-                        <td className="py-3 px-4">{d.description}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="py-3 px-4">
-                        No hay denuncias registradas.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <table className="w-full mx-auto bg-card rounded-xl shadow-lg overflow-hidden text-center">
+            <thead className="bg-muted">
+              <tr>
+                <th className="py-3 px-4">Name Tag</th>
+                <th className="py-3 px-4">App</th>
+                <th className="py-3 px-4">Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {denuncias.map((d, i) => (
+                <tr key={i} className="border-b last:border-b-0 bg-background">
+                  <td className="py-3 px-4">{d.name_tag}</td>
+                  <td className="py-3 px-4">{d.app}</td>
+                  <td className="py-3 px-4">{d.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           <button
             className="mt-6 px-6 py-2 rounded bg-blue-900 text-white font-semibold hover:bg-blue-700"
