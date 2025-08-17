@@ -38,4 +38,14 @@ def register_user(user: RegisterUser):
 
 @app.post("/v1/web/login")
 def login_user(user: User):
-    return user
+    if not existing_user(user.email):
+        return {"error": f"Email {user.email} is not registered"}
+    
+    hash = get_user_password(user.email)
+
+    if not validate_password(hash, user.password):
+        return {"error": f"Incorrect password"}
+
+    user_id = get_user_id(user.email)
+
+    return {"user_id": f"{user_id}"}
