@@ -11,22 +11,17 @@ import { Link } from 'react-router-dom'
 
 const navItems = [
   {
-    name: 'Home',
-    href: '/home',
-    icon: <HomeIcon className="h-4 w-4 text-gray-500" />,
-  },
-  {
-    name: 'About',
+    name: 'Dashboard',
     href: '/about',
     icon: <Info className="h-4 w-4 text-gray-500" />,
   },
+  {
+    name: 'Bitácora',
+    href: '/bitacora',
+    icon: <HomeIcon className="h-4 w-4 text-gray-500" />,
+  },
 ]
 
-const outputItem = {
-  name: 'Login',
-  href: '/login',
-  icon: <LogIn className="h-4 w-4 text-gray-500" />,
-}
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -56,12 +51,6 @@ export default function MobileNav() {
               </Link>
             </DropdownMenuItem>
           ))}
-          <DropdownMenuItem asChild variant="destructive">
-            <Link to={outputItem.href} className="flex items-center gap-2">
-              {outputItem.icon}
-              <span>{outputItem.name}</span>
-            </Link>
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

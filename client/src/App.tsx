@@ -1,10 +1,11 @@
 import { ThemeProvider } from '@/components/theme-provider'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Layout from '@/Layout'
+import LayoutAbout from '@/Layout'
 import LayoutLogin from '@/LayoutLogin'
 import Home from '@/pages/Home'
 import About from '@/pages/About'
 import Login from '@/pages/Login'
+import Bitacora from '@/pages/Bitacora'
 
 function App() {
   return (
@@ -15,12 +16,13 @@ function App() {
 
           <Route element={<LayoutLogin />}>
             <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<Home />} />
           </Route>
 
-          <Route element={<Layout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/home" element={<Home />} />
+          <Route element={<LayoutAbout />}>
             <Route path="/about" element={<About />} />
+            <Route path="/bitacora" element={<Bitacora />} />
+            <Route path="/home" element={<Home />} />
           </Route>
         </Routes>
       </BrowserRouter>

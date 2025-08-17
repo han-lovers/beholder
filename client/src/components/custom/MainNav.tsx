@@ -5,22 +5,22 @@ import { ModeToggle } from '@/components/mode-toggle'
 
 const navItems = [
   {
-    name: 'Home',
-    href: '/home',
-    icon: <HomeIcon className="h-4 w-4 text-gray-500" />,
-  },
-  {
-    name: 'About',
+    name: 'Dashboard',
     href: '/about',
     icon: <Info className="h-4 w-4 text-gray-500" />,
   },
+  {
+    name: 'Bitácora',
+    href: '/bitacora',
+    icon: <HomeIcon className="h-4 w-4 text-gray-500" />,
+  },
+  {
+    name: 'Sign Out',
+    href: '/home',
+    icon: <LogIn className="h-4 w-4 text-gray-500" />,
+  },
 ]
 
-const outputItem = {
-  name: 'Login',
-  href: '/',
-  icon: <LogIn className="h-4 w-4 text-gray-500" />,
-}
 
 export default function MainNav() {
   return (
@@ -43,15 +43,6 @@ export default function MainNav() {
             </Link>
           </Button>
         ))}
-        <Button asChild variant="default">
-          <Link
-            to={outputItem.href}
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            {outputItem.icon}
-            <span>{outputItem.name}</span>
-          </Link>
-        </Button>
       </div>
     </div>
   )
