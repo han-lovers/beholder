@@ -23,7 +23,7 @@ export default function Home() {
         </div>
 
         <div className="bg-card rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition">
-          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-4" />
+          <AlertTriangle className="w-10 h-10 text-indigo-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Detección de riesgos</h3>
           <p className="mb-1">
             Beholder identifica grooming, violencia y mensajes peligrosos al
@@ -32,7 +32,7 @@ export default function Home() {
         </div>
 
         <div className="bg-card rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition">
-          <Shield className="w-10 h-10 text-green-600 mx-auto mb-4" />
+          <Shield className="w-10 h-10 text-indigo-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">
             Advertencias y aprendizaje
           </h3>
@@ -43,7 +43,7 @@ export default function Home() {
         </div>
 
         <div className="bg-card rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition">
-          <BookOpen className="w-10 h-10 text-purple-600 mx-auto mb-4" />
+          <BookOpen className="w-10 h-10 text-indigo-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Bitácora para padres</h3>
           <p className="mb-1">
             Obtén un historial claro de advertencias y un feed en vivo de la

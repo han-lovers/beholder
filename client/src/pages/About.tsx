@@ -1,34 +1,32 @@
+import CrearAlerta from '@/components/custom/CrearAlerta'
+import Alertas from '@/components/custom/Alertas'
+import Denuncias from '@/components/custom/Denuncias'
+import LiveFeed from '@/components/custom/LiveFeed'
+
 export default function About() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
+    <div className="flex min-h-svh flex-col items-center bg-background justify-center">
       <section className="grid grid-cols-[3fr_2fr] w-full py-5 px-6 gap-x-4">
         <div className="w-full text-center py-20 bg-card shadow-xs rounded-2xl">
           <h1 className="text-2xl font-bold">Live feed</h1>
         </div>
-
-        <div className="w-full text-center py-20 bg-card shadow-xs rounded-2xl">
-          <h1 className="text-2xl font-bold">Crea tu propia alerta</h1>
+        <div className="flex flex-col gap-y-4">
+          <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
+            <h1 className="text-base font-semibold p-2">Crea tu propia alerta</h1>
+            <CrearAlerta />
+          </div>
+          <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
+            <h1 className="text-base font-semibold">Alertas que ha obtenido</h1>
+            <Alertas />
+          </div>
         </div>
       </section>
-
-
-      <section className="grid grid-cols-[2fr_3fr] w-full py-5 px-6 gap-x-4">
-        <div className="w-full text-center py-20 bg-card shadow-xs rounded-2xl">
-          <h1 className="text-2xl font-bold">Sex offenders</h1>
+      <section className="w-full py-5 px-6">
+        <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
+          <h1 className="text-base font-semibold">Sex offenders</h1>
+          <Denuncias />
         </div>
-
-        <section className="grid grid-rows-[3fr_2fr] w-full py-5 px-6 gap-x-4 gap-y-4">
-          <div className="w-full text-center py-20 bg-card shadow-xs rounded-2xl">
-            <h1 className="text-2xl font-bold">Bitacora</h1>
-          </div>
-          <div className="w-full text-center py-20 bg-card shadow-xs rounded-2xl">
-            <h1 className="text-2xl font-bold">Alertas</h1>
-          </div>
-        </section>
-
-
       </section>
-
     </div>
   )
 }
