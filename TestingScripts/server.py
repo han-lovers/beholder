@@ -9,14 +9,14 @@ from typing import Optional
 app = FastAPI()
 VALID_PARENTS = {"papa123", "papa456", "admin001"}
 
+
 class GroomingAlertRequest(BaseModel):
     type: str
     importance: str
     parent_id: str
     description: str
     image: Optional[str] = None  # Base64 del screenshot, puede ser None
-    message: str
-    timestamp: str
+
 
 @app.get("/api/check_parent/{parent_id}")
 async def check_parent(parent_id: str):
@@ -41,8 +41,10 @@ async def get_screenshot(payload: ScreenshotPayload):
     print(f"Screenshot guardado en {file_path}")
     return {"valid": True}
 
+
 @app.post("/api/grooming_alerts/")
 async def receive_grooming_alert(alert: GroomingAlertRequest):
     print("📌 Alerta de grooming recibida:")
     print(alert.dict())  # Imprime todos los campos del request
     return JSONResponse({"status": "success", "message": "Alerta recibida"})
+
