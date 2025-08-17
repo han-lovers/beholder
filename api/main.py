@@ -8,7 +8,7 @@ from models.user import RegisterUser, User
 from models.key_logger import Connector
 from models.denuncia import Denuncia
 from db.users import *
-from db.blacklist import add_to_blacklist_db
+from db.blacklist import *
 from utils.passwords import *
 
 
@@ -85,3 +85,9 @@ def add_to_blacklist(denuncia: Denuncia):
     error = add_to_blacklist_db(denuncia)
 
     return {"error": f"{error}"}
+
+@app.get("/v1/web/blacklist/get")
+def get_from_blacklist():
+    sex_offenders = get_from_blacklist_db()
+
+    return {"sex_offenders": sex_offenders}

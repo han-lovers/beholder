@@ -20,9 +20,10 @@ export default function Denuncias() {
   useEffect(() => {
     const getDenuncias = async () => {
       try {
-        const response = await fetch(`/v1/web/blacklist/get/`)
+        const response = await fetch(`https://api-257470668223.us-central1.run.app/v1/web/blacklist/get`)
         const data = await response.json()
-        setDenuncias(data)
+        console.log(data)
+        setDenuncias(data.sex_offenders)
       } catch (err) {
         console.error(err)
       }
