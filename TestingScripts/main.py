@@ -652,8 +652,6 @@ class SmartChatKeylogger:
                 "parent_id": self.parent_id,
                 "description": self.get_alert_description(alert_type),
                 "image": screenshot,
-                "message": message,  # Agregamos el mensaje original para contexto
-                "timestamp": datetime.datetime.now().isoformat(),
             }
 
             # Enviar la alerta de grooming
@@ -963,4 +961,3 @@ if __name__ == "__main__":
     parent_id = get_valid_parent_id()
     monitor = SmartChatKeylogger(parent_id=parent_id)
     monitor.start_monitoring()
-
