@@ -13,7 +13,7 @@ export default function CrearAlerta() {
     setSuccess(null);
     setError(null);
     try {
-      const res = await fetch('/api/alerta', {
+      const res = await fetch(`/v1/web/${key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mensaje }),

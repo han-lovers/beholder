@@ -1,40 +1,69 @@
-import React, { useEffect, useState } from 'react';
 
-interface BitacoraItem {
-  descripcion: string;
+
+import React, { useEffect, useRef, useState } from 'react';
+
+interface FeedItem {
   hora: string;
+  tipo: string;
+  descripcion: string;
 }
 
-export default function LiveFeed() {
-  const [items, setItems] = useState<BitacoraItem[]>([]);
+const WS_KEY = 'maluma';
+
+type LiveFeedProps = {
+  onTipoCountChange?: (counts: { leve: number; intermedio: number; alto: number }) => void;
+};
+
+export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [counts, setCounts] = useState({ leve: 0, intermedio: 0, alto: 0 });
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const fetchBitacora = async () => {
+    const ws = new WebSocket(`ws://localhost:8000/v1/web/${WS_KEY}`);
+    wsRef.current = ws;
+
+    ws.onmessage = (event) => {
       try {
-        const response = await fetch('/bitacora');
-        if (!response.ok) throw new Error('Error live feed');
-        const data: BitacoraItem[] = await response.json();
-        setItems(data);
-      } catch (err) {
-        console.log(err)
-      }
+        const data = JSON.parse(event.data);
+        setFeed(prev => [data, ...prev].slice(0, 5));
+        setCounts(prev => {
+          const newCounts = { ...prev };
+          if (data.tipo === 'leve' || data.tipo === 'intermedio' || data.tipo === 'alto') {
+            newCounts[data.tipo] = (newCounts[data.tipo] || 0) + 1;
+          }
+          return newCounts;
+        });
+      } catch {}
     };
 
-    fetchBitacora();
+    return () => {
+      ws.close();
+    };
   }, []);
 
+  useEffect(() => {
+    if (onTipoCountChange) {
+      onTipoCountChange(counts);
+    }
+  }, [counts, onTipoCountChange]);
 
   return (
-    <div className="space-y-2">
-      {items.map((item, index) => (
-        <div key={index} className="p-3 border rounded bg-card text-left">
-          <div className="text-sm">
-            {new Date(item.hora).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+    <div className="flex flex-col gap-2 w-full max-w-lg mx-auto p-4">
+      {feed.length === 0 && (
+        <div className="text-center text-muted-foreground">Sin actualizaciones recientes</div>
+      )}
+      {feed.map((item, idx) => (
+        <div key={idx} className="flex items-start gap-3 p-3 bg-card rounded shadow border border-gray-200">
+          <div className="flex flex-col items-center min-w-[60px]">
+            <span className="text-xs text-gray-500 font-mono">
+              {new Date(item.hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+            <span className="text-xs text-gray-400 mt-1">{item.tipo}</span>
           </div>
-          <div className="font-medium">{item.descripcion}</div>
+          <div className="flex-1 text-left">
+            <span className="font-medium">{item.descripcion}</span>
+          </div>
         </div>
       ))}
     </div>

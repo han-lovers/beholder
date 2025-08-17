@@ -1,56 +1,171 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const denuncias = [
-  { nombre: 'Juan Pérez', app: 'WhatsApp' },
-  { nombre: 'Ana López', app: 'Instagram' },
-  { nombre: 'Carlos Ruiz', app: 'TikTok' },
-];
+interface Denuncia {
+  name_tag: string;
+  app: string;
+  descripcion: string;
+}
 
 export default function Denuncias() {
-  const [showMensaje, setShowMensaje] = useState(false);
+  const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name_tag: '',
+    app: '',
+    descripcion: '',
+    imagen: null as File | null,
+  });
+
+  useEffect(() => {
+    const getDenuncias = async () => {
+      try {
+        const response = await fetch(`/v1/web/blacklist/get/${id}`);
+        const data = await response.json();
+        setDenuncias(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getDenuncias();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = new FormData();
+    payload.append('name_tag', formData.name_tag);
+    payload.append('app', formData.app);
+    payload.append('descripcion', formData.descripcion);
+    if (formData.imagen) {
+      payload.append('imagen', formData.imagen);
+    }
+
+    try {
+      const response = await fetch('/v1/web/blacklist/add', {
+        method: 'POST',
+        body: payload,
+      });
+
+      const result = await response.json();
+      alert('Se ha mandado la denuncia');
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+      alert('Error al enviar denuncia');
+    }
+  };
 
   return (
     <div className="w-full flex flex-col items-center p-10">
-      {showMensaje ? (
+      {showForm ? (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-            <h2 className="text-2xl text-black font-bold mb-4">Motivo de denuncia</h2>
-            <p className="mb-6 text-black">cbhbdck dcbdbcnhjbchj.</p>
-            <button
-              className="px-6 py-2 rounded-md bg-blue-900 text-black font-semibold hover:bg-primary/90"
-              onClick={() => setShowMensaje(false)}
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-left space-y-4"
+          >
+            <h2 className="text-2xl font-bold text-black">Nueva denuncia</h2>
+
+            <h3>Name Tag</h3>
+            <input
+              type="text"
+              placeholder="Inserte el Name Tag"
+              value={formData.name_tag}
+              onChange={(e) =>
+                setFormData({ ...formData, name_tag: e.target.value })
+              }
+              className="w-full border px-4 py-2 rounded bg-gray-300"
+              required
+            />
+
+            <h3>App </h3>
+            <input
+              type="text"
+              placeholder="Inserte la App"
+              value={formData.app}
+              onChange={(e) =>
+                setFormData({ ...formData, app: e.target.value })
+              }
+              className="w-full border px-4 py-2 rounded bg-gray-300"
+              required
+            />
+
+            <h3>Descripción</h3>
+            <textarea
+              placeholder="Complete con una descripción"
+              value={formData.descripcion}
+              onChange={(e) =>
+                setFormData({ ...formData, descripcion: e.target.value })
+              }
+              className="w-full border px-4 py-2 rounded bg-gray-300"
+              required
+            />
+
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer px-6 py-2 rounded bg-blue-500 text-white font-semibold hover:bg-blue-700 inline-block"
             >
-              Cerrar
-            </button>
-          </div>
+              Subir imagen
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  imagen: e.target.files?.[0] || null,
+                })
+              }
+              className="hidden"
+            />
+
+            <div className="flex justify-between">
+              <button
+                type="submit"
+                className="px-6 py-2 rounded bg-blue-900 text-white font-semibold hover:bg-blue-700"
+              >
+                Enviar
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-6 py-2 rounded bg-gray-300 text-black font-semibold hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
       ) : (
-        <table className="w-full mx-auto bg-card rounded-xl shadow-lg overflow-hidden text-center items-center">
-          <thead className="bg-muted text-center items-center justify-center">
-            <tr>
-              <th className="py-3 px-4 text-center">Name Tag</th>
-              <th className="py-3 px-4 text-center">App</th>
-              <th className="py-3 px-4 text-center">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {denuncias.map((d, i) => (
-              <tr key={i} className="border-b last:border-b-0 bg-background">
-                <td className="py-3 px-4">{d.nombre}</td>
-                <td className="py-3 px-4">{d.app}</td>
-                <td className="py-3 px-4">
-                  <button
-                    className="px-4 py-1 rounded bg-[#a12323] text-white font-semibold hover:bg-red-600"
-                    onClick={() => setShowMensaje(true)}
-                  >
-                    Info
-                  </button>
-                </td>
+        <>
+          <table className="w-full mx-auto bg-card rounded-xl shadow-lg overflow-hidden text-center">
+            <thead className="bg-muted">
+              <tr>
+                <th className="py-3 px-4">Name Tag</th>
+                <th className="py-3 px-4">App</th>
+                <th className="py-3 px-4">Descripción</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {denuncias.map((d, i) => (
+                <tr key={i} className="border-b last:border-b-0 bg-background">
+                  <td className="py-3 px-4">{d.name_tag}</td>
+                  <td className="py-3 px-4">{d.app}</td>
+                  <td className="py-3 px-4">{d.descripcion}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <button
+            className="mt-6 px-6 py-2 rounded bg-blue-900 text-white font-semibold hover:bg-blue-700"
+            onClick={() => setShowForm(true)}
+          >
+            Agregar denuncia
+          </button>
+        </>
       )}
     </div>
-  );
+  )
 }
