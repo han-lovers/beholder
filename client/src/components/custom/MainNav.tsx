@@ -30,8 +30,16 @@ export default function MainNav() {
         <span className="text-lg font-bold">Beholder</span>
       </Link>
 
+
       <div className="flex gap-2">
         <ModeToggle />
+        {/**
+         * TODO
+         * Arreglar el boton para que jale el id del localstorage cuando se le haga click
+         */}
+        <Button asChild key={8} variant="ghost">
+          <span>Obtener my ID de usuario</span>
+        </Button>
         {navItems.map((item, index) => (
           <Button asChild key={index} variant="ghost">
             <Link
