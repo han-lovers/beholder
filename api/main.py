@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from bson.errors import InvalidId
 
 from models.user import RegisterUser, User
+from models.key_logger import Connector
 from db.users import *
 from utils.passwords import *
 
@@ -49,3 +51,27 @@ def login_user(user: User):
     user_id = get_user_id(user.email)
 
     return {"user_id": f"{user_id}"}
+
+@app.post("/v1/key_logger/connect")
+def connect_keylogger(connector: Connector):
+    try:
+        updated_user = add_children_addresses(connector)
+        
+        if not updated_user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found or MAC address already exists"
+            )
+            
+        return {"error": ""}
+        
+    except InvalidId:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid user ID format"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
