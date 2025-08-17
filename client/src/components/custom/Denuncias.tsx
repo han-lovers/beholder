@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 interface Denuncia {
   name_tag: string
   app: string
-  descripcion: string
+  description: string
   image_base64?: string
 }
 
@@ -13,7 +13,7 @@ export default function Denuncias() {
   const [formData, setFormData] = useState<Denuncia>({
     name_tag: '',
     app: '',
-    descripcion: '',
+    description: '',
     image_base64: '',
   })
 
@@ -106,9 +106,9 @@ export default function Denuncias() {
             <h3>Descripción</h3>
             <textarea
               placeholder="Complete con una descripción"
-              value={formData.descripcion}
+              value={formData.description}
               onChange={(e) =>
-                setFormData({ ...formData, descripcion: e.target.value })
+                setFormData({ ...formData, description: e.target.value })
               }
               className="w-full border text-black px-4 py-2 rounded bg-gray-300"
               required
@@ -160,7 +160,7 @@ export default function Denuncias() {
                 <tr key={i} className="border-b last:border-b-0 bg-background">
                   <td className="py-3 px-4">{d.name_tag}</td>
                   <td className="py-3 px-4">{d.app}</td>
-                  <td className="py-3 px-4">{d.descripcion}</td>
+                  <td className="py-3 px-4">{d.description}</td>
                 </tr>
               ))}
             </tbody>
