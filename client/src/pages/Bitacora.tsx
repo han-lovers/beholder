@@ -108,25 +108,25 @@ export default function Bitacora() {
             Más recientes
           </button>
           <button
-            className={`px-3 py-1 rounded ${sort === 'antiguos' ? 'bg-primary' : 'bg-muted'}`}
+            className={`px-3 py-1 rounded ${sort === 'antiguos' ? 'bg-primary text-black' : 'bg-muted'}`}
             onClick={() => setSort('antiguos')}
           >
             Más antiguos
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="w-full flex flex-col gap-2">
         {sortedItems.length === 0 && (
-          <div className="text-center text-muted-foreground">
+          <div className="w-full text-center text-muted-foreground">
             Sin registros en la bitácora
           </div>
         )}
         {sortedItems.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 p-3 w-full bg-card rounded shadow border border-gray-200"
+            className="w-full bg-card rounded-xl shadow border border-gray-200 p-4 flex flex-col gap-2"
           >
-            <div className="flex flex-col w-full items-center min-w-[60px]">
+            <div className="w-full flex items-center justify-between mb-1">
               <span className="text-xs text-gray-500 font-mono">
                 {new Date(item.hora).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -134,14 +134,16 @@ export default function Bitacora() {
                   second: '2-digit',
                 })}
               </span>
-              <span className="text-xs text-gray-400 mt-1">{item.tipo}</span>
+              <span className={`text-xs px-2 py-1 rounded-full font-semibold ${tipoColors[item.tipo] || 'bg-gray-300'} text-black ml-2`}>
+                {tipoLabels[item.tipo] || item.tipo}
+              </span>
             </div>
-            <div className="flex-1 text-left">
-              <span className="font-medium">{item.descripcion}</span>
+            <div className="text-base font-medium text-left mb-1">
+              {item.descripcion}
             </div>
             {item.imagen && (
               <button
-                className="ml-4 px-2 py-1 rounded bg-blue-500 text-white text-xs hover:bg-blue-700"
+                className="self-start mt-1 px-3 py-1 rounded-lg bg-blue-500 text-white text-xs hover:bg-blue-700"
                 onClick={() => setShowImg(item.imagen!)}
               >
                 Ver captura de pantalla del momento
