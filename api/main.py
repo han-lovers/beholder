@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from bson.errors import InvalidId
 
 import pymongo
+import json
 
 from models.user import RegisterUser, User
 from models.key_logger import Connector
@@ -91,3 +92,53 @@ def get_from_blacklist():
     sex_offenders = get_from_blacklist_db()
 
     return {"sex_offenders": sex_offenders}
+
+channels = {}
+
+@app.websocket("/v1/ws/{key}")
+async def alerts_websocket(websocket: WebSocket, key: str):
+    await websocket.accept()
+    if key not in channels:
+        channels[key] = []
+    channels[key].append(websocket)
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Broadcast to all other clients in this channel
+            for conn in channels[key]:
+                if conn != websocket:
+                    await conn.send_text(data)
+    except WebSocketDisconnect:
+        channels[key].remove(websocket)
+
+@app.websocket("/v1/ws/{key}")
+async def alerts_websocket(websocket: WebSocket, key: str):
+    await websocket.accept()
+    if key not in channels:
+        channels[key] = []
+    channels[key].append(websocket)
+
+    try:
+        while True:
+            # Receive JSON string from Client A
+            message_text = await websocket.receive_text()
+            try:
+                message = json.loads(message_text)
+            except json.JSONDecodeError:
+                await websocket.send_text("Invalid JSON")
+                continue
+
+            # Optional: validate expected keys
+            expected_keys = {"type", "importance", "img", "description"}
+            if not expected_keys.issubset(message.keys()):
+                await websocket.send_text("Missing keys in JSON")
+                continue
+
+            # Broadcast JSON to all other clients (e.g., Client B)
+            for conn in channels[key]:
+                if conn != websocket:
+                    await conn.send_text(json.dumps(message))
+
+    except WebSocketDisconnect:
+        channels[key].remove(websocket)
