@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pathlib import Path
@@ -48,44 +48,9 @@ async def get_screenshot(payload: ScreenshotPayload):
     return {"valid": True}
 
 
-# =======================
-# WEBSOCKET MANAGER
-# =======================
-connections = []
-
-
-@app.websocket("/ws/alerts")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    connections.append(websocket)
-    try:
-        while True:
-            await websocket.receive_text()  # Mantener la conexión viva
-    except WebSocketDisconnect:
-        connections.remove(websocket)
-
-
-async def broadcast_alert(alert: dict):
-    """Manda la alerta a todos los clientes WS conectados"""
-    disconnected = []
-    for conn in connections:
-        try:
-            await conn.send_json(alert)
-        except Exception:
-            disconnected.append(conn)
-    for conn in disconnected:
-        connections.remove(conn)
-
-
-# =======================
-# ENDPOINT GROOMING ALERT
-# =======================
 @app.post("/api/grooming_alerts/")
 async def receive_grooming_alert(alert: GroomingAlertRequest):
     print("📌 Alerta de grooming recibida:")
     print(alert.dict())
-
-    # 🔹 Aquí va el broadcast a los clientes WS
-    await broadcast_alert(alert.dict())
 
     return JSONResponse({"status": "success", "message": "Alerta recibida"})
