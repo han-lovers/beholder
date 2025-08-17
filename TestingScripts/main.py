@@ -636,7 +636,6 @@ class SmartChatKeylogger:
             alert_thread.start()
 
     def send_grooming_alert(self, evaluation, screenshot, message):
-        """Envía alerta completa de grooming y después muestra la alerta de seguridad"""
         try:
             # Parsear el resultado de la evaluación
             if "/" in evaluation:
@@ -655,7 +654,7 @@ class SmartChatKeylogger:
             }
 
             # Enviar la alerta de grooming
-            url = "https://api-257470668223.us-central1.run.app/v1/key_logger/warning/"
+            url = "https://api-257470668223.us-central1.run.app/v1/key_logger/warning"
             response = requests.post(url, json=grooming_payload)
             print(f"Alerta de grooming enviada: {response.status_code}")
 
@@ -664,14 +663,6 @@ class SmartChatKeylogger:
                 print(f"   Importancia: {importance}")
                 print(f"   Descripción: {self.get_alert_description(alert_type)}")
 
-                # También enviar el screenshot al endpoint original (por compatibilidad)
-                screenshot_url = "http://127.0.0.1:8000/api/get_screenshot/"
-                screenshot_response = requests.post(
-                    screenshot_url, json={"screenshot": screenshot}
-                )
-                print(
-                    f"Screenshot adicional enviado: {screenshot_response.status_code}"
-                )
 
                 # Mostrar la alerta de seguridad al usuario
                 print("Mostrando alerta de seguridad al usuario...")
