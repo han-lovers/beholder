@@ -20,21 +20,24 @@ export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/v1/web/${WS_KEY}`);
+    const ws = new WebSocket(`ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`);
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setFeed(prev => [data, ...prev].slice(0, 5));
-        setCounts(prev => {
-          const newCounts = { ...prev };
-          if (data.tipo === 'leve' || data.tipo === 'intermedio' || data.tipo === 'alto') {
-            newCounts[data.tipo] = (newCounts[data.tipo] || 0) + 1;
-          }
-          return newCounts;
-        });
-      } catch {}
+        console.log("New message from Client A: ", data)
+        // setFeed(prev => [data, ...prev].slice(0, 5));
+        // setCounts(prev => {
+        //   const newCounts = { ...prev };
+        //   if (data.tipo === 'leve' || data.tipo === 'intermedio' || data.tipo === 'alto') {
+        //     newCounts[data.tipo] = (newCounts[data.tipo] || 0) + 1;
+        //   }
+        //   return newCounts;
+      }
+      catch (err) {
+        console.log("Error: ", err);
+      }
     };
 
     return () => {
