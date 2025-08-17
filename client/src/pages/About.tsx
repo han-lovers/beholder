@@ -1,5 +1,3 @@
-
-import CrearAlerta from '@/components/custom/CrearAlerta'
 import Alertas from '@/components/custom/Alertas'
 import Denuncias from '@/components/custom/Denuncias'
 import LiveFeed from '@/components/custom/LiveFeed'
@@ -16,10 +14,6 @@ export default function About() {
           <LiveFeed onTipoCountChange={setAlertCounts} />
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
-            <h1 className="text-base font-semibold p-2">Crea tu propia alerta</h1>
-            <CrearAlerta />
-          </div>
           <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
             <h1 className="text-base font-semibold">Alertas que ha obtenido</h1>
             <Alertas {...alertCounts} />

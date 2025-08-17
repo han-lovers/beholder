@@ -56,32 +56,6 @@ export default function MainNav() {
 
         <ModeToggle />
 
-        {/* child addresses*/}  
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
-              {selectedKey ? `Dispositivo: ${selectedKey}` : 'Dispositivos de mi(s) hijo(s)'}
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {addresses.length === 0 ? (
-              <DropdownMenuItem disabled>No hay dispositivos</DropdownMenuItem>
-            ) : (
-              addresses.map((addr, i) => (
-                <DropdownMenuItem
-                  key={i}
-                  onSelect={() => setSelectedKey(addr)}
-                  className={addr === selectedKey ? 'bg-accent' : ''}
-                >
-                  {addr}
-                </DropdownMenuItem>
-              ))
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-
         {/* Botón hover para mostrar ID */}
         <Button
           asChild

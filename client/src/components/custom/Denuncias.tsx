@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 interface Denuncia {
   name_tag: string
   app: string
-  descirption: string
+  description: string
   image_base64?: string
 }
 
@@ -13,7 +13,7 @@ export default function Denuncias() {
   const [formData, setFormData] = useState<Denuncia>({
     name_tag: '',
     app: '',
-    descirption: '',
+    description: '',
     image_base64: '',
   })
 
@@ -104,9 +104,9 @@ export default function Denuncias() {
             <h3>Descripción</h3>
             <textarea
               placeholder="Complete con una descripción"
-              value={formData.descirption}
+              value={formData.description}
               onChange={(e) =>
-                setFormData({ ...formData, descirption: e.target.value })
+                setFormData({ ...formData, description: e.target.value })
               }
               className="w-full border px-4 py-2 rounded text-black bg-gray-300"
               required
@@ -147,7 +147,12 @@ export default function Denuncias() {
         <>
           <div className="w-full overflow-x-auto">
             <div className="max-h-[400px] overflow-y-auto rounded-xl shadow-lg">
-              <table className="w-full mx-auto bg-card text-center">
+              <table className="w-full mx-auto bg-card text-center" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '50%' }} />
+                </colgroup>
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
                     <th className="py-3 px-4">Name Tag</th>
@@ -164,7 +169,7 @@ export default function Denuncias() {
                       >
                         <td className="py-3 px-4">{d.name_tag}</td>
                         <td className="py-3 px-4">{d.app}</td>
-                        <td className="py-3 px-4">{d.descirption}</td>
+                        <td className="py-3 px-4">{d.description}</td>
                       </tr>
                     ))
                   ) : (
