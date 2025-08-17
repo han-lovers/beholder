@@ -6,3 +6,6 @@ class Alert(BaseModel):
     parent_id: str
     description: str
     image: str
+
+class UserId(BaseModel):
+    id: str
