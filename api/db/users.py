@@ -33,3 +33,23 @@ def existing_user(email):
         return True
     
     return False
+
+def get_user_id(email):
+    client = connect()
+
+    db = client.Cluster0
+
+    users_collection = db["users"]
+    user = users_collection.find_one({"email": email})
+
+    return str(user["_id"])
+
+def get_user_password(email):
+    client = connect()
+
+    db = client.Cluster0
+
+    users_collection = db["users"]
+    user = users_collection.find_one({"email": email})
+
+    return str(user["password"])
