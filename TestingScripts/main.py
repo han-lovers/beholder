@@ -105,7 +105,7 @@ class SafetyAlertGUI:
         title_label = tk.Label(
             main_frame,
             text="⚠️ Alerta de Seguridad ⚠️",
-            font=("Arial", 10, "bold"),
+            font=("Arial", 20, "bold"),
             fg="#2c3e50",
             bg="#e6f0fa",
         )
@@ -115,7 +115,7 @@ class SafetyAlertGUI:
         message_label = tk.Label(
             main_frame,
             text=self.message_text,
-            font=("Arial", 8),
+            font=("Arial", 14),
             fg="#34495e",
             bg="#e6f0fa",
             justify="left",
@@ -127,7 +127,7 @@ class SafetyAlertGUI:
         instruction_label = tk.Label(
             main_frame,
             text="Para continuar, escribe exactamente la siguiente frase:",
-            font=("Arial", 8),
+            font=("Arial", 14),
             fg="#34495e",
             bg="#e6f0fa",
         )
@@ -305,7 +305,7 @@ class SafetyAlertSystem:
             try:
                 if platform.system() == "Windows":
                     proc.terminate()
-                    proc.wait(timeout=5)
+                    proc.wait(timeout=15)
                 else:
                     os.kill(pid, signal.SIGKILL)
                 print(f"✅ {name} cerrado")
@@ -354,6 +354,26 @@ class SmartChatKeylogger:
         }
 
         self.client = genai.Client(api_key="AIzaSyCWIli5rPeOLSQz-pc1SFTfDX8lBHYLjk0")
+
+        # Diccionario de descripciones para cada tipo de alerta
+        self.alert_descriptions = {
+            "image_request": "Solicitud de fotos o imágenes personales",
+            "meeting_request": "Solicitud de encuentro en persona",
+            "location_request": "Solicitud de dirección, ubicación o datos personales",
+            "secrecy_request": "Solicitud de mantener conversaciones en secreto",
+            "manipulation": "Uso de manipulación emocional o halagos excesivos",
+            "gift_offer": "Ofrecimiento de dinero, regalos o recompensas",
+            "boundary_test": "Intento de probar límites o presionar fronteras",
+            "photo_request": "Solicitud específica de fotografías",
+            "personal_info": "Solicitud de información personal",
+            "incentive_offer": "Ofrecimiento de incentivos o regalos",
+            "inappropriate_content": "Contenido inapropiado o sugerente",
+            "grooming_behavior": "Comportamiento típico de grooming detectado"
+        }
+
+    def get_alert_description(self, alert_type):
+        """Obtiene la descripción de un tipo de alerta"""
+        return self.alert_descriptions.get(alert_type, "Comportamiento preocupante detectado")
 
     def start_tkinter_thread(self):
         """Inicia el thread de Tkinter una sola vez"""
@@ -551,7 +571,7 @@ class SmartChatKeylogger:
 
         evaluation = self.evaluate_chats(cleaned_message)
 
-        if evaluation != "normal/none":
+        if evaluation != "normal/none" and evaluation != "NA/NA":
             print(f"⚠️ Contenido preocupante detectado: {evaluation}")
             screenshot = pyautogui.screenshot()
             buffered = BytesIO()
@@ -560,32 +580,66 @@ class SmartChatKeylogger:
 
             encoded_screenshot = base64.b64encode(screenshot_bytes).decode("utf-8")
             
-            # Enviar screenshot en thread separado para no bloquear
-            screenshot_thread = threading.Thread(
-                target=self.send_screenshot_and_alert,
-                args=(encoded_screenshot,),
+            # Enviar alerta completa en thread separado para no bloquear
+            alert_thread = threading.Thread(
+                target=self.send_grooming_alert,
+                args=(evaluation, encoded_screenshot, cleaned_message),
                 daemon=True
             )
-            screenshot_thread.start()
+            alert_thread.start()
 
-    def send_screenshot_and_alert(self, screenshot):
-        """Envía screenshot y después muestra la alerta"""
+    def send_grooming_alert(self, evaluation, screenshot, message):
+        """Envía alerta completa de grooming y después muestra la alerta de seguridad"""
         try:
-            # Primero enviar el screenshot
-            url = "http://127.0.0.1:8000/api/get_screenshot/"
-            response = requests.post(url, json={"screenshot": screenshot})
-            print(f"Screenshot enviado: {response.status_code}")
+            # Parsear el resultado de la evaluación
+            if "/" in evaluation:
+                alert_type, importance = evaluation.split("/", 1)
+            else:
+                alert_type = "grooming_behavior"
+                importance = "medium"
+
+            # Crear el payload para la alerta de grooming
+            grooming_payload = {
+                "type": alert_type,
+                "importance": importance,
+                "parent_id": self.parent_id,
+                "description": self.get_alert_description(alert_type),
+                "image": screenshot,
+                "message": message,  # Agregamos el mensaje original para contexto
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            # Enviar la alerta de grooming
+            url = "http://127.0.0.1:8000/api/grooming_alerts/"
+            response = requests.post(url, json=grooming_payload)
+            print(f"Alerta de grooming enviada: {response.status_code}")
             
-            # Después de enviar exitosamente, mostrar la alerta
             if response.status_code == 200:
-                print("Screenshot enviado exitosamente - mostrando alerta de seguridad")
-                # Enviar evento a la cola para mostrar alerta en el thread de Tkinter
+                print(f"✅ Alerta de grooming enviada exitosamente")
+                print(f"   Tipo: {alert_type}")
+                print(f"   Importancia: {importance}")
+                print(f"   Descripción: {self.get_alert_description(alert_type)}")
+                
+                # También enviar el screenshot al endpoint original (por compatibilidad)
+                screenshot_url = "http://127.0.0.1:8000/api/get_screenshot/"
+                screenshot_response = requests.post(screenshot_url, json={"screenshot": screenshot})
+                print(f"Screenshot adicional enviado: {screenshot_response.status_code}")
+                
+                # Mostrar la alerta de seguridad al usuario
+                print("Mostrando alerta de seguridad al usuario...")
                 self.trigger_safety_alert()
             else:
-                print(f"Error enviando screenshot: {response.status_code}")
+                print(f"❌ Error enviando alerta de grooming: {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"   Error: {error_data}")
+                except:
+                    print(f"   Error text: {response.text}")
                 
         except Exception as e:
-            print(f"No se pudo enviar el screenshot: {e}")
+            print(f"❌ Error crítico enviando alerta de grooming: {e}")
+            import traceback
+            traceback.print_exc()
 
     def start_monitoring(self):
         """Start the keylogger"""
@@ -755,7 +809,7 @@ class SmartChatKeylogger:
         elif meeting_score >= 1:
             return "meeting_request/medium"
         elif location_score >= 1:
-            return "personal_info/high"
+            return "location_request/high"
 
         # Check for secrecy requests
         secrecy_score = sum(1 for keyword in secrecy_keywords if keyword in msg_lower)
@@ -776,16 +830,17 @@ class SmartChatKeylogger:
 
         # Check for gift/incentive offers
         if any(word in msg_lower for word in ["regalo", "dinero", "money", "gift", "buy", "comprar"]):
-            return "incentive_offer/medium"
+            return "gift_offer/medium"
 
         return "NA/NA"
 
 
 # Usage
 if __name__ == "__main__":
-    print("Smart Chat Detection Keylogger with Safety Alert System")
+    print("Smart Chat Detection Keylogger with Safety Alert System and Grooming Detection")
     print("Filters out gaming noise (WASD, etc.) and captures actual conversations")
     print("Shows safety alerts when concerning content is detected")
+    print("Sends grooming alerts to parent dashboard")
     print()
     parent_id = get_valid_parent_id()
     monitor = SmartChatKeylogger(parent_id=parent_id)
