@@ -6,51 +6,58 @@ interface FeedItem {
   descripcion: string
 }
 
-
-const WS_KEY = localStorage.getItem("user_id");
-
-
 type LiveFeedProps = {
   onTipoCountChange?: (counts: {
-    leve: number
-    intermedio: number
-    alto: number
+    low: number
+    medium: number
+    high: number
   }) => void
 }
 
 export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
   const selectedKey = localStorage.getItem('user_id') || ''
   const [feed, setFeed] = useState<FeedItem[]>([])
-  const [counts, setCounts] = useState({ leve: 0, intermedio: 0, alto: 0 })
-  const wsRef = useRef<WebSocket | null>(null)
+  const [counts, setCounts] = useState({ low: 0, medium: 0, high: 0 })
 
   useEffect(() => {
+    if (!selectedKey) return
 
-    const ws = new WebSocket(`ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`);
-    // wsRef.current = ws;
-
-
-    ws.onmessage = (event) => {
+    const fetchFeed = async () => {
       try {
-        const data = JSON.parse(event.data);
-        console.log("New message from Client A: ", data)
-        // setFeed(prev => [data, ...prev].slice(0, 5));
-        // setCounts(prev => {
-        //   const newCounts = { ...prev };
-        //   if (data.tipo === 'leve' || data.tipo === 'intermedio' || data.tipo === 'alto') {
-        //     newCounts[data.tipo] = (newCounts[data.tipo] || 0) + 1;
-        //   }
-        //   return newCounts;
-      }
-      catch (err) {
-        console.log("Error: ", err);
-      }
-    };
+        const response = await fetch(
+          `https://api-257470668223.us-central1.run.app/v1/key_logger/warning/${selectedKey}`
+        )
+        const data = await response.json()
+        const warnings = data.warnings
+        console.log(warnings)
 
-    return () => {
-      ws.close()
+        if (Array.isArray(warnings)) {
+          const mapped = warnings.map((item) => ({
+            hora: item.created_at,
+            tipo: item.importance,
+            descripcion: item.description || item.descripcion || '',
+          }))
+          setFeed(mapped)
+
+          const counts = { low: 0, medium: 0, high: 0 }
+          mapped.forEach((item) => {
+            if (item.tipo === 'low') counts.low++
+            else if (item.tipo === 'medium') counts.medium++
+            else if (item.tipo === 'high') counts.high++
+          })
+          setCounts(counts)
+        }
+      } catch (err) {
+        console.error('Error fetching datos:', err)
+      }
     }
-  }, [])
+
+    fetchFeed()
+
+    const interval = setInterval(fetchFeed, 5000)
+
+    return () => clearInterval(interval)
+  }, [selectedKey])
 
   useEffect(() => {
     if (onTipoCountChange) {

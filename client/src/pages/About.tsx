@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 
 export default function About() {
-  const [alertCounts, setAlertCounts] = useState({ leve: 0, intermedio: 0, alto: 0 });
+  const [alertCounts, setAlertCounts] = useState({ low: 0, medium: 0, high: 0 });
   return (
     <div className="flex min-h-svh flex-col items-center bg-background justify-center">
       <section className="grid grid-cols-[3fr_2fr] w-full py-5 px-6 gap-x-4">

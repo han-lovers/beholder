@@ -2,19 +2,19 @@
 import { AlertTriangle } from 'lucide-react';
 
 type AlertasProps = {
-  leve: number;
-  intermedio: number;
-  alto: number;
+  low: number;
+  medium: number;
+  high: number;
 };
 
 const alertas = [
-  { color: 'bg-[#d4bb18]', border: 'border-[#d4bb18]', label: 'Alerta leve', key: 'leve' },
-  { color: 'bg-[#f59e0b]', border: 'border-[#f59e0b]', label: 'Alerta media', key: 'intermedio' },
-  { color: 'bg-[#a12323]', border: 'border-[#a12323]', label: 'Alerta grave', key: 'alto' },
+  { color: 'bg-[#d4bb18]', border: 'border-[#d4bb18]', label: 'Alerta leve', key: 'low' },
+  { color: 'bg-[#f59e0b]', border: 'border-[#f59e0b]', label: 'Alerta media', key: 'medium' },
+  { color: 'bg-[#a12323]', border: 'border-[#a12323]', label: 'Alerta grave', key: 'high' },
 ];
 
-export default function Alertas({ leve, intermedio, alto }: AlertasProps) {
-  const counts = { leve, intermedio, alto };
+export default function Alertas({ low, medium, high }: AlertasProps) {
+  const counts = { low, medium, high };
   return (
     <div className="flex flex-col items-center gap-4 w-full p-4">
       <div className="flex gap-8">

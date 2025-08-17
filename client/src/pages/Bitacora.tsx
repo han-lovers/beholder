@@ -1,35 +1,59 @@
-import { useDeviceKey } from '@/context/DeviceKeyContext'
 import { useEffect, useState } from 'react'
 
 interface BitacoraItem {
   hora: string
   tipo: string
   descripcion: string
+  imagen?: string
 }
 
 const tipoLabels: Record<string, string> = {
-  leve: 'Leve',
-  intermedio: 'Intermedio',
-  alto: 'Alto',
+  low: 'Leve',
+  medium: 'Intermedio',
+  high: 'Alto',
 }
 
 const tipoColors: Record<string, string> = {
-  leve: 'bg-yellow-300',
-  intermedio: 'bg-orange-400',
-  alto: 'bg-red-500',
+  low: 'bg-yellow-300',
+  medium: 'bg-orange-400',
+  high: 'bg-red-500',
 }
 
 export default function Bitacora() {
   const selectedKey = localStorage.getItem('user_id') || ''
   const [items, setItems] = useState<BitacoraItem[]>([])
+  const [showImg, setShowImg] = useState<string | null>(null)
   const [sort, setSort] = useState<'recientes' | 'antiguos'>('recientes')
 
   useEffect(() => {
-    fetch(`/bitacora/${selectedKey}`)
-      .then((res) => res.json())
-      .then((data) => setItems(data))
-      .catch(() => setItems([]))
-  }, [])
+    if (!selectedKey) return
+
+    const fetchBitacora = async () => {
+      try {
+        const response = await fetch(
+          `https://api-257470668223.us-central1.run.app/v1/key_logger/warning/${selectedKey}`
+        )
+        const data = await response.json()
+        const warnings = data.warnings
+        console.log(warnings)
+
+        if (Array.isArray(warnings)) {
+          const mapped = warnings.map((item: any) => ({
+            hora: item.created_at,
+            tipo: item.importance,
+            descripcion: item.description || item.descripcion || '',
+            imagen: item.image || item.img || '',
+          }))
+          setItems(mapped)
+        } else {
+          setItems([])
+        }
+      } catch {
+        setItems([])
+      }
+    }
+    fetchBitacora()
+  }, [selectedKey])
 
   const sortedItems = [...items].sort((a, b) => {
     if (sort === 'recientes') {
@@ -40,7 +64,7 @@ export default function Bitacora() {
   })
 
   const totalAlertas = items.length
-  const porTipo: Record<string, number> = { leve: 0, intermedio: 0, alto: 0 }
+  const porTipo: Record<string, number> = { low: 0, medium: 0, high: 0 }
   items.forEach((i) => {
     if (porTipo[i.tipo] !== undefined) porTipo[i.tipo]++
   })
@@ -61,12 +85,12 @@ export default function Bitacora() {
             {Object.keys(porTipo).map((tipo) => (
               <div
                 key={tipo}
-                className={`flex flex-col items-center ${tipoColors[tipo] || ''} rounded p-2 min-w-[60px]`}
+                className={`flex flex-col text-black items-center ${tipoColors[tipo] || ''} rounded p-2 min-w-[60px]`}
               >
-                <span className="text-lg font-bold text-white">
+                <span className="text-lg font-bold text-black">
                   {porTipo[tipo]}
                 </span>
-                <span className="text-xs text-white">
+                <span className="text-xs text-black">
                   {tipoLabels[tipo] || tipo}
                 </span>
               </div>
@@ -75,36 +99,16 @@ export default function Bitacora() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl shadow p-6 mb-8">
-        <div className="text-lg font-semibold mb-4">
-          Evolución de alertas por tipo
-        </div>
-        <div className="flex items-end gap-4 h-32">
-          {Object.keys(porTipo).map((tipo) => (
-            <div key={tipo} className="flex flex-col items-center flex-1">
-              <div
-                className={`${tipoColors[tipo] || 'bg-gray-300'} w-8 rounded-t transition-all`}
-                style={{
-                  height: `${(porTipo[tipo] / (totalAlertas || 1)) * 100}%`,
-                }}
-                title={`${porTipo[tipo]} ${tipoLabels[tipo] || tipo}`}
-              ></div>
-              <span className="text-xs mt-2">{tipoLabels[tipo] || tipo}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2">
           <button
-            className={`px-3 py-1 rounded ${sort === 'recientes' ? 'bg-primary text-white' : 'bg-muted'}`}
+            className={`px-3 py-1 rounded ${sort === 'recientes' ? 'bg-primary text-black' : 'bg-muted'}`}
             onClick={() => setSort('recientes')}
           >
             Más recientes
           </button>
           <button
-            className={`px-3 py-1 rounded ${sort === 'antiguos' ? 'bg-primary text-white' : 'bg-muted'}`}
+            className={`px-3 py-1 rounded ${sort === 'antiguos' ? 'bg-primary' : 'bg-muted'}`}
             onClick={() => setSort('antiguos')}
           >
             Más antiguos
@@ -120,9 +124,9 @@ export default function Bitacora() {
         {sortedItems.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 p-3 bg-card rounded shadow border border-gray-200"
+            className="flex items-start gap-3 p-3 w-full bg-card rounded shadow border border-gray-200"
           >
-            <div className="flex flex-col items-center min-w-[60px]">
+            <div className="flex flex-col w-full items-center min-w-[60px]">
               <span className="text-xs text-gray-500 font-mono">
                 {new Date(item.hora).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -135,8 +139,29 @@ export default function Bitacora() {
             <div className="flex-1 text-left">
               <span className="font-medium">{item.descripcion}</span>
             </div>
+            {item.imagen && (
+              <button
+                className="ml-4 px-2 py-1 rounded bg-blue-500 text-white text-xs hover:bg-blue-700"
+                onClick={() => setShowImg(item.imagen!)}
+              >
+                Ver captura de pantalla del momento
+              </button>
+            )}
           </div>
         ))}
+        {showImg && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center">
+              <img src={`data:image/png;base64,${showImg}`} alt="Evidencia" className="max-w-[80vw] max-h-[80vh]" />
+              <button
+                className="mt-4 px-4 py-2 rounded bg-blue-900 text-white font-semibold hover:bg-blue-700"
+                onClick={() => setShowImg(null)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

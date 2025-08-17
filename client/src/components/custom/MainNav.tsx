@@ -33,19 +33,7 @@ const navItems = [
 export default function MainNav() {
   const [showId, setShowId] = useState(false)
   const userId = localStorage.getItem('user_id') || 'No ID'
-  const [addresses, setAddresses] = useState<string[]>([])
-  const { selectedKey, setSelectedKey } = useDeviceKey()
-
-
-  useEffect(() => {
-    if (userId === 'No ID') return
-    fetch(`https://api-257470668223.us-central1.run.app/v1/user/${userId}/children_addresses`)
-      .then(res => res.json())
-      .then(data => setAddresses(data.children_addresses || []))
-      .catch(() => setAddresses([]))
-  }, [userId])
-
-
+  
   return (
     <div className="hidden md:flex items-center gap-4 w-full justify-between">
       <Link to="/home" className="flex items-center gap-2">
