@@ -7,7 +7,7 @@ def hash_password(password):
     return hash
 
 def validate_password(hash, password):
-    if bcrypt.checkpw(password.encode("utf-8"), hash):
+    if bcrypt.checkpw(password.encode("utf-8"), hash.encode("utf-8")):
         return True
     
     return False
