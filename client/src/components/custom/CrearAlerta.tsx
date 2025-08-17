@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useDeviceKey } from '@/context/DeviceKeyContext';
 import { AlertTriangle } from 'lucide-react';
 
 export default function CrearAlerta() {
+  const { selectedKey } = useDeviceKey();
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -12,8 +14,13 @@ export default function CrearAlerta() {
     setLoading(true);
     setSuccess(null);
     setError(null);
+    if (!selectedKey) {
+      setError('Selecciona un dispositivo primero');
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch(`/v1/web/${key}`, {
+      const res = await fetch(`https://api-257470668223.us-central1.run.app/v1/web/blacklist/add/v1/web/${selectedKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mensaje }),

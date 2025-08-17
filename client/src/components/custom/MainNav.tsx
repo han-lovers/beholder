@@ -1,8 +1,15 @@
 import { Button } from '@/components/ui/button'
-import { LogIn, Info, Home as HomeIcon } from 'lucide-react'
+import { LogIn, Info, Home as HomeIcon, ChevronDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModeToggle } from '@/components/mode-toggle'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import { useDeviceKey } from '@/context/DeviceKeyContext'
 
 const navItems = [
   {
@@ -25,6 +32,18 @@ const navItems = [
 export default function MainNav() {
   const [showId, setShowId] = useState(false)
   const userId = localStorage.getItem('user_id') || 'No ID'
+  const [addresses, setAddresses] = useState<string[]>([])
+  const { selectedKey, setSelectedKey } = useDeviceKey()
+
+
+  useEffect(() => {
+    if (userId === 'No ID') return
+    fetch(`https://api-257470668223.us-central1.run.app/v1/user/${userId}/children_addresses`)
+      .then(res => res.json())
+      .then(data => setAddresses(data.children_addresses || []))
+      .catch(() => setAddresses([]))
+  }, [userId])
+
 
   return (
     <div className="hidden md:flex items-center gap-4 w-full justify-between">
@@ -34,6 +53,7 @@ export default function MainNav() {
       </Link>
 
       <div className="flex gap-2">
+
         <ModeToggle />
 
         {/* Botón hover para mostrar ID */}
@@ -45,6 +65,8 @@ export default function MainNav() {
         >
           <span>{showId ? userId : 'Obtener my ID de usuario'}</span>
         </Button>
+
+
 
         {navItems.map((item, index) => (
           <Button asChild key={index} variant="ghost">

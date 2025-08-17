@@ -1,6 +1,5 @@
-
-
 import React, { useEffect, useRef, useState } from 'react';
+import { useDeviceKey } from '@/context/DeviceKeyContext';
 
 interface FeedItem {
   hora: string;
@@ -8,20 +7,25 @@ interface FeedItem {
   descripcion: string;
 }
 
+
 const WS_KEY = localStorage.getItem("user_id");
+
 
 type LiveFeedProps = {
   onTipoCountChange?: (counts: { leve: number; intermedio: number; alto: number }) => void;
 };
 
 export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
+    const { selectedKey } = useDeviceKey();
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [counts, setCounts] = useState({ leve: 0, intermedio: 0, alto: 0 });
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+
     const ws = new WebSocket(`ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`);
     // wsRef.current = ws;
+
 
     ws.onmessage = (event) => {
       try {
