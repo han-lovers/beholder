@@ -14,7 +14,7 @@ def add_to_blacklist_db(denuncia):
         "name_tag": denuncia.name_tag,
         "app": denuncia.app,
         "description": denuncia.descripcion,
-        "img": Binary(base64.denuncia.image_base64)
+        "img": Binary(denuncia.image_base64.encode("utf-8"))
     }
 
     try:
