@@ -8,7 +8,7 @@ interface FeedItem {
   descripcion: string;
 }
 
-const WS_KEY = 'maluma';
+const WS_KEY = localStorage.getItem("user_id");
 
 type LiveFeedProps = {
   onTipoCountChange?: (counts: { leve: number; intermedio: number; alto: number }) => void;
@@ -21,7 +21,7 @@ export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
 
   useEffect(() => {
     const ws = new WebSocket(`ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`);
-    wsRef.current = ws;
+    // wsRef.current = ws;
 
     ws.onmessage = (event) => {
       try {
