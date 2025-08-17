@@ -9,10 +9,35 @@ export default function Login() {
   const [passwordConf, setPasswordConf] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
-    if (yeii) {
-      navigate('/about')
-    } else {
-      alert('Credenciales incorrectas. Inténtalo de nuevo.')
+    e.preventDefault()
+
+    try {
+      const response = await fetch('https://api-257470668223.us-central1.run.app/v1/web/login', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: mail,
+          password: password
+        }),
+      });
+
+      const data = await response.json()
+
+      if (data.error) {
+        alert(data.error)
+      }
+      else {
+        const id = data.user_id;
+
+        localStorage.setItem("user_id", id);
+
+        navigate("/about")
+      }
+    }
+    catch (e) {
+      console.log(e);
     }
   }
 
