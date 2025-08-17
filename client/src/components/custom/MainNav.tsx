@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { LogIn, Info, Home as HomeIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ModeToggle } from '@/components/mode-toggle'
+import { useState } from 'react'
 
 const navItems = [
   {
@@ -21,8 +22,10 @@ const navItems = [
   },
 ]
 
-
 export default function MainNav() {
+  const [showId, setShowId] = useState(false)
+  const userId = localStorage.getItem('user_id') || 'No ID'
+
   return (
     <div className="hidden md:flex items-center gap-4 w-full justify-between">
       <Link to="/home" className="flex items-center gap-2">
@@ -30,16 +33,19 @@ export default function MainNav() {
         <span className="text-lg font-bold">Beholder</span>
       </Link>
 
-
       <div className="flex gap-2">
         <ModeToggle />
-        {/**
-         * TODO
-         * Arreglar el boton para que jale el id del localstorage cuando se le haga click
-         */}
-        <Button asChild key={8} variant="ghost">
-          <span>Obtener my ID de usuario</span>
+
+        {/* Botón hover para mostrar ID */}
+        <Button
+          asChild
+          key="userId"
+          variant="ghost"
+          onClick={() => setShowId(!showId)}
+        >
+          <span>{showId ? userId : 'Obtener my ID de usuario'}</span>
         </Button>
+
         {navItems.map((item, index) => (
           <Button asChild key={index} variant="ghost">
             <Link
