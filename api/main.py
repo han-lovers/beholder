@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 
-@app.post("/v1/register")
+@app.post("/v1/web/register")
 def register_user(user: RegisterUser):
 
     # Return error if passwords do not match
@@ -36,6 +36,6 @@ def register_user(user: RegisterUser):
 
     return {"error": ""}
 
-@app.post("/v1/login")
+@app.post("/v1/web/login")
 def login_user(user: User):
     return user
