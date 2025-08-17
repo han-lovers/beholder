@@ -20,7 +20,7 @@ const outputItem = {
 export default function MainNav() {
   return (
     <div className="hidden md:flex items-center gap-4 w-full justify-between">
-      <Link to="/" className="flex items-center gap-2">
+      <Link to="/home" className="flex items-center gap-2">
         <div className="bg-gray-300 w-8 h-8 rounded" />
         <span className="text-lg font-bold">Beholder</span>
       </Link>
