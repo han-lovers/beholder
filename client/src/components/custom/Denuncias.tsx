@@ -46,7 +46,7 @@ export default function Denuncias() {
     e.preventDefault()
 
     try {
-      const response = await fetch('/v1/web/blacklist/add', {
+      const response = await fetch('https://api-257470668223.us-central1.run.app/v1/web/blacklist/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

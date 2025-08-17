@@ -1,5 +1,4 @@
-
-
+import { useDeviceKey } from '@/context/DeviceKeyContext';
 import { useEffect, useState } from 'react';
 
 interface BitacoraItem {
@@ -20,12 +19,15 @@ const tipoColors: Record<string, string> = {
   alto: 'bg-red-500',
 };
 
+
+
 export default function Bitacora() {
+    const { selectedKey } = useDeviceKey();
   const [items, setItems] = useState<BitacoraItem[]>([]);
   const [sort, setSort] = useState<'recientes' | 'antiguos'>('recientes');
 
   useEffect(() => {
-    fetch('/bitacora')
+    fetch(`/bitacora/${selectedKey}`)
       .then(res => res.json())
       .then(data => setItems(data))
       .catch(() => setItems([]));

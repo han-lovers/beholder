@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from bson.errors import InvalidId
 
+
 from models.user import RegisterUser, User
 from models.key_logger import Connector
 from db.users import *
