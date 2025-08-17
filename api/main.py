@@ -8,7 +8,7 @@ import json
 from models.user import RegisterUser, User
 from models.key_logger import Connector
 from models.denuncia import Denuncia
-from models.alerts import Alert
+from models.alerts import Alert, UserId
 from db.users import *
 from db.blacklist import *
 from db.logs import *
@@ -119,3 +119,9 @@ def post_alerts(alert: Alert):
     add_logs(alert)
 
     return alert
+
+@app.get("/v1/key_logger/warning/{id}")
+def get_alert_logs(id: str):
+    alerts = get_alerts(id)
+
+    return {"warnings": alerts}
