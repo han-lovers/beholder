@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface FeedItem {
   hora: string
@@ -6,9 +6,7 @@ interface FeedItem {
   descripcion: string
 }
 
-
-const WS_KEY = localStorage.getItem("user_id");
-
+const WS_KEY = localStorage.getItem('user_id')
 
 type LiveFeedProps = {
   onTipoCountChange?: (counts: {
@@ -25,15 +23,15 @@ export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
-
-    const ws = new WebSocket(`ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`);
+    const ws = new WebSocket(
+      `ws://api-257470668223.us-central1.run.app/v1/web/${WS_KEY}`
+    )
     // wsRef.current = ws;
-
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
-        console.log("New message from Client A: ", data)
+        const data = JSON.parse(event.data)
+        console.log('New message from Client A: ', data)
         // setFeed(prev => [data, ...prev].slice(0, 5));
         // setCounts(prev => {
         //   const newCounts = { ...prev };
@@ -41,11 +39,10 @@ export default function LiveFeed({ onTipoCountChange }: LiveFeedProps) {
         //     newCounts[data.tipo] = (newCounts[data.tipo] || 0) + 1;
         //   }
         //   return newCounts;
+      } catch (err) {
+        console.log('Error: ', err)
       }
-      catch (err) {
-        console.log("Error: ", err);
-      }
-    };
+    }
 
     return () => {
       ws.close()

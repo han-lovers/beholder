@@ -20,7 +20,9 @@ export default function Denuncias() {
   useEffect(() => {
     const getDenuncias = async () => {
       try {
-        const response = await fetch(`https://api-257470668223.us-central1.run.app/v1/web/blacklist/get`)
+        const response = await fetch(
+          `https://api-257470668223.us-central1.run.app/v1/web/blacklist/get`
+        )
         const data = await response.json()
         console.log(data)
         setDenuncias(data.sex_offenders)
@@ -48,14 +50,17 @@ export default function Denuncias() {
 
     try {
       console.log(formData)
-      const response = await fetch('https://api-257470668223.us-central1.run.app/v1/web/blacklist/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const response = await fetch(
+        'https://api-257470668223.us-central1.run.app/v1/web/blacklist/add',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        }
+      )
 
       const result = await response.json()
-      //console.log(result);
+      console.log(result)
       alert('Se ha mandado la denuncia')
       setShowForm(false)
     } catch (err) {
@@ -155,7 +160,7 @@ export default function Denuncias() {
                 <tr key={i} className="border-b last:border-b-0 bg-background">
                   <td className="py-3 px-4">{d.name_tag}</td>
                   <td className="py-3 px-4">{d.app}</td>
-                  <td className="py-3 px-4">{d.description}</td>
+                  <td className="py-3 px-4">{d.descripcion}</td>
                 </tr>
               ))}
             </tbody>
