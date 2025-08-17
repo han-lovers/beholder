@@ -16,55 +16,80 @@ import signal
 import psutil
 import platform
 import queue
+import uuid
 
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 ID_FILE = DATA_DIR / "parent_id.txt"
 
 
+def get_mac_address():
+    return ":".join(
+        ["{:02x}".format((uuid.getnode() >> ele) & 0xFF) for ele in range(0, 8 * 6, 8)][
+            ::-1
+        ]
+    )
+
+
 def get_valid_parent_id():
     # Intentar leer parent_id guardado
+    mac_address = get_mac_address()
     if ID_FILE.exists():
         parent_id = ID_FILE.read_text().strip()
-        # Validar con la API
+        payload = {"id": parent_id, "mac": mac_address}
         try:
-            resp = requests.get(f"http://127.0.0.1:8000/api/check_parent/{parent_id}")
-            data = resp.json()
-            if data.get("valid"):
+            response = requests.post(
+                "https://api-257470668223.us-central1.run.app/v1/key_logger/connect",
+                json=payload,
+            )
+            data = response.json()
+            if response.status_code == 200:
                 print(f"Login automático con parent_id: {parent_id}")
                 return parent_id
             else:
-                print(f"parent_id guardado no es válido: {parent_id}")
+                print(
+                    f"El id guardado no funcionó: {data.get('error', 'Error desconocido')}"
+                )
         except Exception as e:
             print(f"No se pudo validar parent_id guardado: {e}")
 
     # Si no existe o no es válido, pedir input
     while True:
         parent_id = input("Introduce el parent_id del padre: ").strip()
+        payload = {"id": parent_id, "mac": mac_address}
         try:
-            resp = requests.get(f"http://127.0.0.1:8000/api/check_parent/{parent_id}")
-            data = resp.json()
-            if data.get("valid"):
-                # Guardar para futuros inicios
+            response = requests.post(
+                "https://api-257470668223.us-central1.run.app/v1/key_logger/connect",
+                json=payload,
+            )
+            data = response.json()
+            if response.status_code == 200:
                 ID_FILE.write_text(parent_id)
-                print(f"Login realizado con parent_id: {parent_id}")
+                print(f"Login realizado con parent_id: {data.get('parent_id')}")
                 return parent_id
             else:
-                print("parent_id inválido, intenta de nuevo.")
+                print(
+                    f"Error al validar parent_id: {data.get('error', 'Error desconocido')}"
+                )
         except Exception as e:
             print(f"Error al validar parent_id: {e}")
 
 
 class SafetyAlertGUI:
-    def __init__(self, on_timeout_or_no_understanding, message_text=None, required_phrase=None):
+    def __init__(
+        self, on_timeout_or_no_understanding, message_text=None, required_phrase=None
+    ):
         self.alert_active = False
         self.on_timeout_or_no_understanding = on_timeout_or_no_understanding
-        self.message_text = message_text or """RECORDATORIO IMPORTANTE:
+        self.message_text = (
+            message_text
+            or """RECORDATORIO IMPORTANTE:
 
 • Nunca compartas tu información personal
 • No digas tu nombre real, dirección o teléfono  
 • No envíes fotos tuyas
 • Si alguien te pide datos personales, habla con un adulto"""
+        )
         self.required_phrase = required_phrase or "Entiendo las reglas de seguridad"
         self.root = None
         self.countdown_label = None
@@ -80,20 +105,20 @@ class SafetyAlertGUI:
         # Create a new root window for this alert
         self.root = tk.Tk()
         self.root.title("⚠️ Alerta de Seguridad")
-        
+
         # Set a larger size to ensure everything is visible
         self.root.geometry("1000x1000")
         self.root.configure(bg="#e6f0fa")
         self.root.resizable(False, False)
         self.root.protocol("WM_DELETE_WINDOW", lambda: None)
         self.root.attributes("-topmost", True)
-        
+
         # Center the window
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() // 2) - (700 // 2)
         y = (self.root.winfo_screenheight() // 2) - (550 // 2)
         self.root.geometry(f"1000x1000+{x}+{y}")
-        
+
         self.root.lift()
         self.root.focus_force()
 
@@ -136,7 +161,7 @@ class SafetyAlertGUI:
         # Required phrase in a box
         phrase_frame = tk.Frame(main_frame, bg="#d5dbdb", relief="solid", bd=2)
         phrase_frame.pack(pady=(0, 25), padx=20, fill="x")
-        
+
         phrase_label = tk.Label(
             phrase_frame,
             text=f"'{self.required_phrase}'",
@@ -191,14 +216,16 @@ class SafetyAlertGUI:
         # Start countdown and make modal
         self.start_countdown(remaining=10)
         self.root.grab_set()
-        
+
         # Start the mainloop for this window
         self.root.mainloop()
 
     def start_countdown(self, remaining=10):
         if remaining > 0 and self.alert_active and self.root:
             try:
-                self.countdown_label.config(text=f"Tiempo restante: {remaining} segundos")
+                self.countdown_label.config(
+                    text=f"Tiempo restante: {remaining} segundos"
+                )
                 self.root.after(1000, lambda: self.start_countdown(remaining - 1))
             except tk.TclError:
                 # Window was destroyed
@@ -217,16 +244,16 @@ class SafetyAlertGUI:
     def handle_response(self):
         if not self.root:
             return
-            
+
         try:
             user_input = self.input_entry.get().strip()
             if user_input == self.required_phrase:
                 self.alert_active = False
                 print("Usuario confirmó correctamente.")
                 messagebox.showinfo(
-                    "¡Éxito!", 
+                    "¡Éxito!",
                     "Has confirmado las reglas de seguridad. Puedes continuar.",
-                    parent=self.root
+                    parent=self.root,
                 )
                 self.root.quit()
                 self.root.destroy()
@@ -236,7 +263,7 @@ class SafetyAlertGUI:
                 messagebox.showwarning(
                     "¡Frase Incorrecta!",
                     "La frase que escribiste no es correcta. El juego se cerrará por tu seguridad.",
-                    parent=self.root
+                    parent=self.root,
                 )
                 self.on_timeout_or_no_understanding()
                 self.root.quit()
@@ -255,10 +282,10 @@ class SafetyAlertSystem:
         if self.alert_active:
             print("Alert already active, skipping...")
             return
-        
+
         self.alert_active = True
         print("Mostrando alerta de seguridad...")
-        
+
         try:
             # Create and show the alert GUI
             alert_gui = SafetyAlertGUI(
@@ -275,8 +302,7 @@ class SafetyAlertSystem:
         """Wrapper that creates alert in a new thread"""
         # Create a new thread for the alert to avoid blocking
         alert_thread = threading.Thread(
-            target=self.show_safety_alert_in_thread,
-            daemon=False
+            target=self.show_safety_alert_in_thread, daemon=False
         )
         alert_thread.start()
 
@@ -324,14 +350,14 @@ class SmartChatKeylogger:
         self.listener = None
         self.running = False
         self.last_key_time = time.time()
-        
+
         # Queue para comunicación entre threads
         self.alert_queue = queue.Queue()
-        
+
         # Tkinter root window (hidden) - esto se ejecuta en el thread principal
         self.root = None
         self.alert_system = SafetyAlertSystem()
-        
+
         # Thread para Tkinter
         self.tkinter_thread = None
         self.tkinter_running = False
@@ -341,7 +367,20 @@ class SmartChatKeylogger:
 
         # Gaming keys that create noise
         self.gaming_keys = {
-            "w", "a", "s", "d", "q", "e", "r", "f", "g", "h", "z", "x", "c", "v",
+            "w",
+            "a",
+            "s",
+            "d",
+            "q",
+            "e",
+            "r",
+            "f",
+            "g",
+            "h",
+            "z",
+            "x",
+            "c",
+            "v",
         }
 
         # Chat indicators
@@ -368,22 +407,26 @@ class SmartChatKeylogger:
             "personal_info": "Solicitud de información personal",
             "incentive_offer": "Ofrecimiento de incentivos o regalos",
             "inappropriate_content": "Contenido inapropiado o sugerente",
-            "grooming_behavior": "Comportamiento típico de grooming detectado"
+            "grooming_behavior": "Comportamiento típico de grooming detectado",
         }
 
     def get_alert_description(self, alert_type):
         """Obtiene la descripción de un tipo de alerta"""
-        return self.alert_descriptions.get(alert_type, "Comportamiento preocupante detectado")
+        return self.alert_descriptions.get(
+            alert_type, "Comportamiento preocupante detectado"
+        )
 
     def start_tkinter_thread(self):
         """Inicia el thread de Tkinter una sola vez"""
         if self.tkinter_thread and self.tkinter_thread.is_alive():
             return
-            
+
         self.tkinter_running = True
-        self.tkinter_thread = threading.Thread(target=self.run_tkinter_loop, daemon=True)
+        self.tkinter_thread = threading.Thread(
+            target=self.run_tkinter_loop, daemon=True
+        )
         self.tkinter_thread.start()
-        
+
         # Esperar a que Tkinter se inicialice
         time.sleep(0.5)
 
@@ -392,10 +435,10 @@ class SmartChatKeylogger:
         self.root = tk.Tk()
         self.root.withdraw()  # Ocultar la ventana principal
         self.root.title("Keylogger Background")
-        
+
         # Procesar eventos de la cola cada 100ms
         self.process_alert_queue()
-        
+
         try:
             self.root.mainloop()
         except:
@@ -412,7 +455,7 @@ class SmartChatKeylogger:
                     self.alert_system.show_safety_alert(self.root)
         except queue.Empty:
             pass
-        
+
         # Programar la próxima verificación
         if self.tkinter_running and self.root:
             self.root.after(100, self.process_alert_queue)
@@ -499,7 +542,9 @@ class SmartChatKeylogger:
                 char = " "
             elif key == keyboard.Key.enter:
                 # End of chat message - always save if it passes the filter
-                if len(self.current_sequence.strip()) > 0 and self.analyze_typing_pattern(self.current_sequence):
+                if len(
+                    self.current_sequence.strip()
+                ) > 0 and self.analyze_typing_pattern(self.current_sequence):
                     self.save_chat_message(self.current_sequence)
                 self.current_sequence = ""
                 return
@@ -528,7 +573,9 @@ class SmartChatKeylogger:
         # Clear old sequences only after much longer inactivity
         time_since_last = current_time - self.last_key_time
         if time_since_last > 10:  # 10 seconds of inactivity
-            if len(self.current_sequence) > 5 and self.analyze_typing_pattern(self.current_sequence):
+            if len(self.current_sequence) > 5 and self.analyze_typing_pattern(
+                self.current_sequence
+            ):
                 self.save_chat_message(self.current_sequence)
             self.current_sequence = ""
 
@@ -579,12 +626,12 @@ class SmartChatKeylogger:
             screenshot_bytes = buffered.getvalue()
 
             encoded_screenshot = base64.b64encode(screenshot_bytes).decode("utf-8")
-            
+
             # Enviar alerta completa en thread separado para no bloquear
             alert_thread = threading.Thread(
                 target=self.send_grooming_alert,
                 args=(evaluation, encoded_screenshot, cleaned_message),
-                daemon=True
+                daemon=True,
             )
             alert_thread.start()
 
@@ -606,25 +653,29 @@ class SmartChatKeylogger:
                 "description": self.get_alert_description(alert_type),
                 "image": screenshot,
                 "message": message,  # Agregamos el mensaje original para contexto
-                "timestamp": datetime.datetime.now().isoformat()
+                "timestamp": datetime.datetime.now().isoformat(),
             }
 
             # Enviar la alerta de grooming
             url = "http://127.0.0.1:8000/api/grooming_alerts/"
             response = requests.post(url, json=grooming_payload)
             print(f"Alerta de grooming enviada: {response.status_code}")
-            
+
             if response.status_code == 200:
                 print(f"✅ Alerta de grooming enviada exitosamente")
                 print(f"   Tipo: {alert_type}")
                 print(f"   Importancia: {importance}")
                 print(f"   Descripción: {self.get_alert_description(alert_type)}")
-                
+
                 # También enviar el screenshot al endpoint original (por compatibilidad)
                 screenshot_url = "http://127.0.0.1:8000/api/get_screenshot/"
-                screenshot_response = requests.post(screenshot_url, json={"screenshot": screenshot})
-                print(f"Screenshot adicional enviado: {screenshot_response.status_code}")
-                
+                screenshot_response = requests.post(
+                    screenshot_url, json={"screenshot": screenshot}
+                )
+                print(
+                    f"Screenshot adicional enviado: {screenshot_response.status_code}"
+                )
+
                 # Mostrar la alerta de seguridad al usuario
                 print("Mostrando alerta de seguridad al usuario...")
                 self.trigger_safety_alert()
@@ -635,10 +686,11 @@ class SmartChatKeylogger:
                     print(f"   Error: {error_data}")
                 except:
                     print(f"   Error text: {response.text}")
-                
+
         except Exception as e:
             print(f"❌ Error crítico enviando alerta de grooming: {e}")
             import traceback
+
             traceback.print_exc()
 
     def start_monitoring(self):
@@ -671,10 +723,10 @@ class SmartChatKeylogger:
         print("\nStopping chat monitoring...")
         self.running = False
         self.tkinter_running = False
-        
+
         if self.listener:
             self.listener.stop()
-            
+
         if self.root:
             try:
                 self.root.quit()
@@ -707,7 +759,9 @@ class SmartChatKeylogger:
                 try:
                     # Extract timestamp
                     timestamp_str = line.split("]")[0][1:]
-                    msg_time = datetime.datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+                    msg_time = datetime.datetime.strptime(
+                        timestamp_str, "%Y-%m-%d %H:%M:%S"
+                    )
 
                     if msg_time >= cutoff_time:
                         recent_chats.append(line)
@@ -786,16 +840,71 @@ class SmartChatKeylogger:
         msg_lower = msg.lower().strip()
 
         # Define concerning patterns and keywords
-        photo_keywords = ["foto", "photo", "pic", "picture", "imagen", "selfie", "manda", "send", "envia"]
-        meeting_keywords = ["vemos", "meet", "encuentro", "reunion", "conocer", "verse", "quedar", "salir"]
-        location_keywords = ["donde vives", "direccion", "casa", "escuela", "where do you live", "address", "location"]
-        secrecy_keywords = ["secreto", "no digas", "entre nosotros", "secret", "dont tell", "between us", "privado"]
-        manipulation_keywords = ["especial", "madura", "diferente", "special", "mature", "unique", "regalo", "gift"]
-        inappropriate_keywords = ["sexy", "linda", "hermosa", "cuerpo", "body", "intimate", "beautiful", "attractive"]
+        photo_keywords = [
+            "foto",
+            "photo",
+            "pic",
+            "picture",
+            "imagen",
+            "selfie",
+            "manda",
+            "send",
+            "envia",
+        ]
+        meeting_keywords = [
+            "vemos",
+            "meet",
+            "encuentro",
+            "reunion",
+            "conocer",
+            "verse",
+            "quedar",
+            "salir",
+        ]
+        location_keywords = [
+            "donde vives",
+            "direccion",
+            "casa",
+            "escuela",
+            "where do you live",
+            "address",
+            "location",
+        ]
+        secrecy_keywords = [
+            "secreto",
+            "no digas",
+            "entre nosotros",
+            "secret",
+            "dont tell",
+            "between us",
+            "privado",
+        ]
+        manipulation_keywords = [
+            "especial",
+            "madura",
+            "diferente",
+            "special",
+            "mature",
+            "unique",
+            "regalo",
+            "gift",
+        ]
+        inappropriate_keywords = [
+            "sexy",
+            "linda",
+            "hermosa",
+            "cuerpo",
+            "body",
+            "intimate",
+            "beautiful",
+            "attractive",
+        ]
 
         # Check for photo requests
         photo_score = sum(1 for keyword in photo_keywords if keyword in msg_lower)
-        if photo_score >= 1 and any(word in msg_lower for word in ["tu", "tuya", "your", "you"]):
+        if photo_score >= 1 and any(
+            word in msg_lower for word in ["tu", "tuya", "your", "you"]
+        ):
             return "photo_request/high"
         elif photo_score >= 1:
             return "photo_request/medium"
@@ -817,19 +926,26 @@ class SmartChatKeylogger:
             return "secrecy_request/high"
 
         # Check for manipulation
-        manipulation_score = sum(1 for keyword in manipulation_keywords if keyword in msg_lower)
+        manipulation_score = sum(
+            1 for keyword in manipulation_keywords if keyword in msg_lower
+        )
         if manipulation_score >= 2:
             return "manipulation/medium"
         elif manipulation_score >= 1 and len(msg) > 20:  # Longer manipulative messages
             return "manipulation/low"
 
         # Check for inappropriate content
-        inappropriate_score = sum(1 for keyword in inappropriate_keywords if keyword in msg_lower)
+        inappropriate_score = sum(
+            1 for keyword in inappropriate_keywords if keyword in msg_lower
+        )
         if inappropriate_score >= 1:
             return "inappropriate_content/medium"
 
         # Check for gift/incentive offers
-        if any(word in msg_lower for word in ["regalo", "dinero", "money", "gift", "buy", "comprar"]):
+        if any(
+            word in msg_lower
+            for word in ["regalo", "dinero", "money", "gift", "buy", "comprar"]
+        ):
             return "gift_offer/medium"
 
         return "NA/NA"
@@ -837,7 +953,9 @@ class SmartChatKeylogger:
 
 # Usage
 if __name__ == "__main__":
-    print("Smart Chat Detection Keylogger with Safety Alert System and Grooming Detection")
+    print(
+        "Smart Chat Detection Keylogger with Safety Alert System and Grooming Detection"
+    )
     print("Filters out gaming noise (WASD, etc.) and captures actual conversations")
     print("Shows safety alerts when concerning content is detected")
     print("Sends grooming alerts to parent dashboard")
@@ -845,3 +963,4 @@ if __name__ == "__main__":
     parent_id = get_valid_parent_id()
     monitor = SmartChatKeylogger(parent_id=parent_id)
     monitor.start_monitoring()
+
