@@ -20,7 +20,7 @@ echo "\n---------------------------------------------\n"
 
 response_3=`curl -s -X POST https://api-257470668223.us-central1.run.app/v1/web/login \
 -H "Content-Type: application/json" \
--d '{"email": "barbo@barbo.com", "password": "barboo"}'`
+-d '{"email": "barbo@barbo.com", "password": "barbo"}'`
 
 echo "Test 3: Correct login"
 echo $response_3
