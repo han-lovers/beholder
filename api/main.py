@@ -11,6 +11,7 @@ from models.denuncia import Denuncia
 from models.alerts import Alert
 from db.users import *
 from db.blacklist import *
+from db.logs import *
 from utils.passwords import *
 
 
@@ -115,4 +116,6 @@ async def alerts_websocket(websocket: WebSocket, key: str):
 
 @app.post("/v1/key_logger/warning")
 def post_alerts(alert: Alert):
+    add_logs(alert)
+
     return alert
