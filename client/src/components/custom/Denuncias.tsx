@@ -4,7 +4,7 @@ interface Denuncia {
   name_tag: string
   app: string
   descripcion: string
-  imagen_base64?: string
+  image_base64?: string
 }
 
 export default function Denuncias() {
@@ -14,7 +14,7 @@ export default function Denuncias() {
     name_tag: '',
     app: '',
     descripcion: '',
-    imagen_base64: '',
+    image_base64: '',
   })
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function Denuncias() {
 
     const reader = new FileReader()
     reader.onloadend = () => {
-      setFormData({ ...formData, imagen_base64: reader.result as string })
+      setFormData({ ...formData, image_base64: reader.result as string })
     }
     reader.readAsDataURL(file) // convierte en base64
   }
@@ -46,13 +46,15 @@ export default function Denuncias() {
     e.preventDefault()
 
     try {
-      const response = await fetch('/v1/web/blacklist/add', {
+      console.log(formData)
+      const response = await fetch('https://api-257470668223.us-central1.run.app/v1/web/blacklist/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       const result = await response.json()
+      //console.log(result);
       alert('Se ha mandado la denuncia')
       setShowForm(false)
     } catch (err) {
