@@ -2,10 +2,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from bson.errors import InvalidId
 
+import pymongo
 
 from models.user import RegisterUser, User
 from models.key_logger import Connector
+from models.denuncia import Denuncia
 from db.users import *
+from db.blacklist import add_to_blacklist_db
 from utils.passwords import *
 
 
@@ -76,3 +79,9 @@ def connect_keylogger(connector: Connector):
             status_code=500,
             detail=f"Internal server error: {str(e)}"
         )
+
+@app.post("/v1/web/blacklist/add")
+def add_to_blacklist(denuncia: Denuncia):
+    error = add_to_blacklist_db(denuncia)
+
+    return {"error": f"{error}"}
