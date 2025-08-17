@@ -22,7 +22,7 @@ export default function About() {
       </section>
       <section className="w-full py-5 px-6">
         <div className="w-full text-center py-6 bg-card shadow-xs rounded-xl">
-          <h1 className="text-4xl font-semibold">Sex offenders</h1>
+          <h1 className="text-4xl font-semibold">Denuncias</h1>
           <Denuncias />
         </div>
       </section>
