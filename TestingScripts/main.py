@@ -17,6 +17,9 @@ import psutil
 import platform
 import queue
 import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -392,7 +395,7 @@ class SmartChatKeylogger:
             "typing_speed": 0,
         }
 
-        self.client = genai.Client(api_key="AIzaSyCWIli5rPeOLSQz-pc1SFTfDX8lBHYLjk0")
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
         # Diccionario de descripciones para cada tipo de alerta
         self.alert_descriptions = {
