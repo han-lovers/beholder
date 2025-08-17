@@ -35,3 +35,7 @@ def register_user(user: RegisterUser):
         return {"error": f"{db_error}"}
 
     return {"error": ""}
+
+@app.post("/v1/login")
+def login_user(user: User):
+    return user
